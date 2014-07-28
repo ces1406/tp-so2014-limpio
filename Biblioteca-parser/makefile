@@ -3,7 +3,7 @@ DIR_INICIO=$(shell cd .. && pwd)
 C_ARCHS1=$(shell find . -iname "*.c" | tr '\n' ' ') 
 OBJS1=$(C_ARCHS1:./%.c=%.o)
 %.o:%.c
-	$(CC) -c -fmessage-length=0 -fPIC -o "$@" "$<" -I$(DIR_INICIO)/biblioteca-commons
+	$(CC) -c -fmessage-length=0 -fPIC -o "$@" "$<" -I$(DIR_INICIO)/Biblioteca-commons
 
 instalar: $(OBJS1)
 	$(CC) -o "libparser.so" $(OBJS1) -shared
