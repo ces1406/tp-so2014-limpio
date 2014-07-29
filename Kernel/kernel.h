@@ -53,7 +53,7 @@ typedef struct{
 	uint32_t valor;
 }t_varCompartida;
 
-static void destruirElementoColaBloq(t_bloqueadoIO *nodoBloq);
+//static void destruirElementoColaBloq(t_bloqueadoIO *nodoBloq);
 static void liberarElementoDiccioIO(t_hiloIO * hiloIO);
 static void liberarElementoDiccioSem(t_semaforo *semaforo);
 static void destruirNodoProceso(t_nodo_proceso *proceso);

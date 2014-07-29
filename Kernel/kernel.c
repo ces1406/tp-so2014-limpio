@@ -695,7 +695,7 @@ void levantarArchivoConf(char *path){
 	printf("***se levanto el archivo de configuracion*****\n");
 }
 void atenderNuevaConexion(int sockEscucha,int conexiones,struct pollfd *ufdss,void (*funcionQueAtiende)(int)){
-	int socketNuevo,i;
+	int socketNuevo;
 	extern t_log *g_logger;
 
 	socketNuevo=aceptarConexion(sockEscucha);

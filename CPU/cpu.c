@@ -618,6 +618,7 @@ t_log *crearLog(char *archivo){
 	log_info(logAux,"ARCHIVO DE LOG CREADO");
 	return logAux;
 }
+
 void liberarMsg(){
 	extern t_msg g_mensaje;
 	free(g_mensaje.flujoDatos);

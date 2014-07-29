@@ -51,7 +51,7 @@ if(!g_expulsar){
 	clave[1]='\0';
 	t_var *varBuscada=dictionary_get(g_diccionario_var,clave);
 	ptr=varBuscada->direccion_var;
-	printf("            --->variable:%c direccion_var-oFFset:%i\n<---",varBuscada->nombre_var,varBuscada->direccion_var);
+	printf("            --->variable:%s direccion_var-oFFset:%i\n<---",varBuscada->nombre_var,varBuscada->direccion_var);
 	log_debug(g_logger,":::primitiva_obtenerPosicionVariable:::\n    se busco variable:%c y se encontro  t_var.nombre:%s  t_var.dirVar-offset-:%i",variable,varBuscada->nombre_var,varBuscada->direccion_var);
 	free(clave);
 }
