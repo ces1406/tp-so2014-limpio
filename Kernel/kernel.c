@@ -398,7 +398,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_SIGNAL://serializado: id_proceso+nombre de_semaforo
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_SIGNAL");
-		//printf("atenderCPU()==>mensaje de cpu: K_SIGNAL\n");
+		printf("atenderCPU()==>mensaje de cpu: K_SIGNAL\n");
 
 		nombreSem=realloc(nombreSem,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombreSem,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -433,6 +433,7 @@ void atenderCPU(int p_sockCPU){
 		enviarMsg(p_sockCPU,mensajeCPU);
 		liberarMsg(&mensajeCPU);
 		k=semaforo->valor;//sino en el if hace cagada(????)
+		printf("semaforo:%s valor:%i\n",semaforo->nombre,k);
 		if(k<0){//=>el semaforo era negativo =>desencolar algun proceso que estuviera bloqueado
 			pthread_mutex_lock(&mutex_semaforos);
 			semaforo->valor++;
@@ -711,6 +712,7 @@ void atenderNuevaConexion(int sockEscucha,int conexiones,struct pollfd *ufdss,vo
 }
 void atenderPrograma(int p_sockPrograma){
 	extern t_log       *g_logger;
+	extern int    g_socketUMV;
 	t_medatada_program *metadata;
 	t_pcb               pcb;
 	t_msg               mensajeProg;
@@ -749,7 +751,7 @@ void atenderPrograma(int p_sockPrograma){
 		if(crearSegmentosYpcb(metadata,&pcb,longitud,codigo)!=0){
 			//error en la creacion de algun segmento=>denegar ejecucion a programa
 			log_debug(g_logger,"atenderPrograma()==>Error al crear alguno de los segmentos, se expulsa a el proceso...");
-			printf("***********ERROR: no hay suficiente espacio en UMV para todos los segmentos del programa==>expulsandolo...***********\n");
+			printf("*****ERROR: no hay suficiente espacio en UMV para todos los segmentos del programa==>expulsandolo...*****\n");
 			//mandarle mensaje a programa
 			mensajeProg.encabezado.codMsg=P_SERVICIO_DENEGADO;
 			mensajeProg.encabezado.longitud=0;
@@ -764,6 +766,14 @@ void atenderPrograma(int p_sockPrograma){
 			g_socketsAbiertos--;
 			int nuevoTam=sizeof(struct pollfd)*g_socketsAbiertos;
 			g_ufdsPLP=realloc(g_ufdsPLP,nuevoTam);
+
+			//PEDIR A UMV LIBERE TODOS LOS SEGMENTOS DEL PROCESO
+			mensajeProg.encabezado.codMsg=U_DESTRUIR_SEGMENTO;
+			mensajeProg.encabezado.longitud=sizeof(int16_t);
+			mensajeProg.flujoDatos=malloc(sizeof(int16_t));
+			memcpy(mensajeProg.flujoDatos,&pcb.id_proceso,sizeof(uint16_t));
+			enviarMsg(g_socketUMV,mensajeProg);
+			liberarMsg(&mensajeProg);
 		}else{
 			//INGRESAR EL PCB A LA COLA DE NEWS
 			log_debug(g_logger,"atenderCPU()==>Los segmentos y el pcb se crearon con exito...");
@@ -1433,11 +1443,11 @@ void *hiloSemaforos(void *sinUso){
 	//extern t_list          *listaListos;
 	extern t_queue         *colaListos;
 	extern t_log           *g_logger;
-	int i;
+	//int i;
 
 	log_debug(g_logger,"hiloSemaforos()==>hilo hiloSemaforos lanzado...");
 	void desbloquear(char*clave,t_semaforo* semaforo){
-		printf("semaforo clave:%s desbloquear:%i colaVacia:%i\n",semaforo->nombre,semaforo->desbloquear,queue_is_empty(semaforo->bloqueados));
+		//printf("semaforo clave:%s desbloquear:%i colaVacia:%i\n",semaforo->nombre,semaforo->desbloquear,queue_is_empty(semaforo->bloqueados));
 		if((semaforo->desbloquear)&&(!queue_is_empty(semaforo->bloqueados))){
 			log_debug(g_logger,"hiloSemaforos()==>Se desbloqueara un proceso bloqueado en el semaforo %s",semaforo->nombre);
 
@@ -1449,7 +1459,7 @@ void *hiloSemaforos(void *sinUso){
 
 			pthread_mutex_lock(&mutex_listaListos);
 			//list_add_in_index(listaListos,list_size(listaListos),proceso);
-			printf("******************-*-*-*-*-*-hiloSemaforos()==>pongo un proceso en listalistos\n");
+			//printf("******************-*-*-*-*-*-hiloSemaforos()==>pongo un proceso en listalistos\n");
 			queue_push(colaListos,proceso);
 			pthread_mutex_unlock(&mutex_listaListos);
 			sem_post(&sem_listaListos);
@@ -1461,7 +1471,8 @@ void *hiloSemaforos(void *sinUso){
 		//printf(".......en while de hiloSemaforos esperando en el semaforo......\n");
 		sem_wait(&sem_semaforos);
 		//printf("......se desbloqueo el semaforo y lo vamos a buscar al diccionario..................\n");
-		//dictionary_iterator(diccio_semaforos,(void*)desbloquear);
+		dictionary_iterator(diccio_semaforos,(void*)desbloquear);
+		/*
 		for(i=0;i<diccio_semaforos->table_max_size;i++){
 			t_hash_element *elemento=diccio_semaforos->elements[i];
 			while (elemento != NULL) {
@@ -1488,6 +1499,7 @@ void *hiloSemaforos(void *sinUso){
 				//element = element->next;
 			}
 		}
+		*/
 	}
 	return NULL;
 }
