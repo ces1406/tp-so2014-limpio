@@ -178,8 +178,7 @@ int main(int argc,char** argv){
 	//MAIN HILO PLP
 	while(1){
 		rv=poll(g_ufdsPLP,g_socketsAbiertos,-1);//socketsAbiertos->var usada para que me indique cuantas conexiones de programas tengo
-		printf("luego de rv=poll() con rv=%i\n",rv);
-
+		//printf("poll() con rv=%i\n",rv);
 		if(rv==-1){
 			//error
 			printf("error en poll()\n");
@@ -188,11 +187,11 @@ int main(int argc,char** argv){
 		}
 		if(g_ufdsPLP[0].revents&POLLIN){
 			//UN NUEVO PROCESO PROGRAMA SE CONECTO
-			printf("main()==>hay una nueva conexion\n");
+			//printf("main()==>hay una nueva conexion\n");
 			g_socketsAbiertos++;
-			printf("despues de aumentar el g_socketsAbiertosa :%i, se hara un realloc con sizeof(struct pollfd):%i\n",g_socketsAbiertos,sizeof(struct pollfd));
+			//printf("despues de aumentar el g_socketsAbiertosa :%i, se hara un realloc con sizeof(struct pollfd):%i\n",g_socketsAbiertos,sizeof(struct pollfd));
 			g_ufdsPLP=realloc(g_ufdsPLP,sizeof(struct pollfd)*g_socketsAbiertos);
-			printf("socketEscuchaPLP:%i g_socketsAbiertos:%i tamanio de g_ufdsPLP(despues del realloc):%i\n",socketEscuchaPLP,g_socketsAbiertos,sizeof(struct pollfd)*g_socketsAbiertos);
+			//printf("socketEscuchaPLP:%i g_socketsAbiertos:%i tamanio de g_ufdsPLP(despues del realloc):%i\n",socketEscuchaPLP,g_socketsAbiertos,sizeof(struct pollfd)*g_socketsAbiertos);
 			atenderNuevaConexion(socketEscuchaPLP,g_socketsAbiertos,g_ufdsPLP,(void*)atenderPrograma);//si hay actividad en el ufds[0]=>un prog. nuevo se quiere conectar
 		}else{
 			for(i=0;i<g_socketsAbiertos-1;i++){
@@ -245,7 +244,7 @@ void atenderCPU(int p_sockCPU){
 	switch(mensajeCPU.encabezado.codMsg){
 	case K_HANDSHAKE:
 		log_debug(g_logger,"atenderCPU()===>mensaje de cpu: K_HANDSHAKE");
-		printf("atenderCPU()===>mensaje de cpu: K_HANDSHAKE\n");
+		//printf("atenderCPU()===>mensaje de cpu: K_HANDSHAKE\n");
 		//se presento una cpu nueva
 		mensajeCPU.encabezado.codMsg=CONEXION_OK;
 		mensajeCPU.encabezado.longitud=0;
@@ -256,7 +255,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_FIN_PROG:
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG");
-		printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG\n");
+		//printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG\n");
 		//un proceso termino=>a la lista listaTerminados
 		actualizarPcb(&l_pcb,mensajeCPU);//------------>hace falta?----->VER SINO OTRA FORMA DE SACAR EL id
 		liberarMsg(&mensajeCPU);
@@ -265,15 +264,16 @@ void atenderCPU(int p_sockCPU){
 		pthread_mutex_lock(&mutex_listaEjecutando);
 		procesoAux=(t_nodo_proceso*)list_remove_by_condition(listaEjecutando,(void *)buscaPorId);
 		pthread_mutex_unlock(&mutex_listaEjecutando);
-		printf("**********FIN DE PROGRAMA el proceso id:%i finalizo**********\n",id);
+		listarEjecutando();
+		printf("***********FIN DE PROGRAMA el proceso id:%i finalizo***********\n",id);
 		//printf("procesoAux: cursorpila:%i id:%i indiceCod:%i tamEtiquetas:%i\n",procesoAux->pcb.cursor_de_pila,procesoAux->pcb.id_proceso,procesoAux->pcb.indice_codigo,procesoAux->pcb.indice_etiquetas);
 		//printf("    %i %i %i %i %i\n",procesoAux->pcb.program_counter,procesoAux->pcb.segmento_codigo,procesoAux->pcb.segmento_pila,procesoAux->pcb.tamanio_contexto_actual,procesoAux->pcb.tamanio_indice_etiquetas);
-		listarEjecutando();
+
 		//actualizar el pcb
 		//procesoAux->pcb=l_pcb;-------->no hace falta ya que se va a expulsar
 		//pasar el proceso a la listaTerminados
 		pasarProcesoATerminados(procesoAux);
-		printf("volviendo de pasarProcesoATerminados yendo a pornerCpuDisponible\n");
+		//printf("volviendo de pasarProcesoATerminados yendo a pornerCpuDisponible\n");
 		//liberando la cpu
 		ponerCpuDisponible(p_sockCPU);
 	break;
@@ -301,7 +301,7 @@ void atenderCPU(int p_sockCPU){
 		//busco el hiloIO que lo va a tomar
 		t_hiloIO *hiloES=dictionary_get(diccio_hilos,nombreIO);
 		if(hiloES==NULL){
-			printf("*********ERROR: el programa id:%i usa un dispositivo E/S inexistente =>el programa se expulsara...\n*********",id);
+			printf("***********ERROR: el programa id:%i usa un dispositivo E/S inexistente =>expulsandolo...\n**********",id);
 			pasarProcesoATerminados(procesoAux);
 			//liberar cpu
 			ponerCpuDisponible(p_sockCPU);
@@ -326,7 +326,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_WAIT://serializado: id_proceso+nombre_de_semaforo
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_WAIT");
-		printf("atenderCPU()==>mensaje de cpu: K_WAIT\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_WAIT\n");
 
 		nombreSem=realloc(nombreSem,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombreSem,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -337,7 +337,7 @@ void atenderCPU(int p_sockCPU){
 		//semaforo=(t_semaforo*)dictionary_get(diccio_semaforos,&mensajeCPU.flujoDatos[sizeof(uint16_t)]);
 
 		if (semaforo==NULL){
-			printf("*********ERROR: el programa usa un semaforo inexistente =>el programa se expulsara...\n*********");
+			printf("***********ERROR: el programa usa un semaforo inexistente =>expulsandolo...\n***********");
 			memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
 
 			mensajeCPU.encabezado.codMsg=C_ERROR;
@@ -388,9 +388,9 @@ void atenderCPU(int p_sockCPU){
 
 			pthread_mutex_lock(&mutex_semaforos);
 			queue_push(semaforo->bloqueados,procesoAux);
-			listarBloqueados();
 			semaforo->valor--;
 			pthread_mutex_unlock(&mutex_semaforos);
+			listarBloqueados();
 			//liberando la cpu
 			ponerCpuDisponible(p_sockCPU);
 		}
@@ -398,7 +398,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_SIGNAL://serializado: id_proceso+nombre de_semaforo
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_SIGNAL");
-		printf("atenderCPU()==>mensaje de cpu: K_SIGNAL\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_SIGNAL\n");
 
 		nombreSem=realloc(nombreSem,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombreSem,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -408,7 +408,7 @@ void atenderCPU(int p_sockCPU){
 		//mensajeCPU.flujoDatos[mensajeCPU.encabezado.longitud+sizeof(uint16_t)]='\0';
 		//semaforo=(t_semaforo*)dictionary_get(diccio_semaforos,&mensajeCPU.flujoDatos[sizeof(uint16_t)]);
 		if (semaforo==NULL){
-			printf("*********ERROR: el programa usa un semaforo inexistente =>el programa se expulsara...\n*********");
+			printf("***********ERROR: el programa usa un semaforo inexistente =>expulsandolo...\n*********");
 			memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
 
 			mensajeCPU.encabezado.codMsg=C_ERROR;
@@ -457,17 +457,16 @@ void atenderCPU(int p_sockCPU){
 		listarEjecutando();
 
 		log_debug(g_logger,"atenderCPU()==>el proceso id:%i produjo una falla en acceso a memoria...",procesoAux->pcb.id_proceso);
-		printf("**********ERROR: el programa id:%i produjo un fallo en acceso a memoria => se expulsara...*********\n",id);
+		printf("***********ERROR: el programa id:%i produjo un acceso a memoria incorrecto =>expulsandolo...**********\n",id);
 
 		//pasar el proceso a la listaTerminados
 		pasarProcesoATerminados(procesoAux);
-		listarTerminados();
 		//liberar cpu
 		ponerCpuDisponible(p_sockCPU);
 	break;
 	case K_EXPULSADO_FIN_QUANTUM://un proceso en cpu salio por fin de quantum
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM");
-		printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM");
+		//printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM");
 
 		actualizarPcb(&l_pcb,mensajeCPU);
 		liberarMsg(&mensajeCPU);
@@ -572,7 +571,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_PEDIDO_VAR_GL://serializacion:id_proceso+nombre_var_compartida
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL");
-		printf("atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL");
+		//printf("atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL");
 
 		nombCompar=realloc(nombCompar,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombCompar,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -581,11 +580,10 @@ void atenderCPU(int p_sockCPU){
 
 		//mensajeCPU.flujoDatos[mensajeCPU.encabezado.longitud+sizeof(uint16_t)]='\0';
 		//varBuscada=dictionary_get(diccio_varCompartidas,&mensajeCPU.flujoDatos[sizeof(uint16_t)]);
-
-		printf("K_VAR_GL()==>llego pedido por la var:%s\n",nombCompar);
+		//printf("K_VAR_GL()==>llego pedido por la var:%s\n",nombCompar);
 
 		if(varBuscada==NULL){
-			printf("**********ERROR:se pide por una variable compartida inexistente, se desalojara el programa...**********\n");
+			printf("***********ERROR:el programa referencia una variable compartida inexistente=>expulsandolo...***********\n");
 			memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
 
 			mensajeCPU.encabezado.codMsg=C_ERROR;
@@ -604,7 +602,7 @@ void atenderCPU(int p_sockCPU){
 			free(nombCompar);nombCompar=NULL;
 			break;
 		}
-		printf("el pedido de varGL fue ok\n");
+		//printf("el pedido de varGL fue ok\n");
 		mensajeCPU.encabezado.codMsg=VALOR_COMPARTIDA_OK;
 		mensajeCPU.encabezado.longitud=sizeof(uint32_t);
 		mensajeCPU.flujoDatos=realloc(mensajeCPU.flujoDatos,sizeof(uint32_t));
@@ -615,18 +613,18 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_ASIGNAR_VAR_GL://serializado: id_proceso+nombre+valor
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL");
-		printf("atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL\n");
 		k=mensajeCPU.encabezado.longitud-sizeof(uint16_t)-sizeof(uint32_t);
 		nombCompar=realloc(nombCompar,k+1);
 		memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
 		memcpy(nombCompar,mensajeCPU.flujoDatos+sizeof(uint16_t),k);
 		memcpy(&valorCompar,mensajeCPU.flujoDatos+k+sizeof(uint16_t),sizeof(uint32_t));
 		nombCompar[k]='\0';
-		printf("K_ASIGNAR_VAR_GL()==>llego el id:%i nombreVar:%s valor:%i\n",id,nombCompar,valorCompar);
+		//printf("K_ASIGNAR_VAR_GL()==>llego el id:%i nombreVar:%s valor:%i\n",id,nombCompar,valorCompar);
 
 		varBuscada=dictionary_get(diccio_varCompartidas,nombCompar);
 		if(varBuscada==NULL){
-			printf("**********ERROR:se quiere asignar un valor a una variable compartida inexistente=>se expulsara al proceso...**********\n");
+			printf("***********ERROR:el programa referencia una variable compartida inexistente=>expulsandolo...***********\n");
 			mensajeCPU.encabezado.codMsg=C_ERROR;
 			mensajeCPU.encabezado.longitud=0;
 			enviarMsg(p_sockCPU,mensajeCPU);
@@ -636,12 +634,12 @@ void atenderCPU(int p_sockCPU){
 			pthread_mutex_lock(&mutex_listaEjecutando);
 			procesoAux=(t_nodo_proceso*)list_remove_by_condition(listaEjecutando,(void *)buscaPorId);
 			pthread_mutex_unlock(&mutex_listaEjecutando);
-			printf("se removio el proceso id:%i  seg_pila:%i de listaListos\n",procesoAux->pcb.id_proceso,procesoAux->pcb.segmento_pila);
+			//printf("se removio el proceso id:%i  seg_pila:%i de listaListos\n",procesoAux->pcb.id_proceso,procesoAux->pcb.segmento_pila);
 			listarEjecutando();
 			//pasar el proceso a la listaTerminados
 			pasarProcesoATerminados(procesoAux);
 			//liberar cpu
-			printf("Se liberara la cpu\n");
+			//printf("Se liberara la cpu\n");
 			ponerCpuDisponible(p_sockCPU);
 			free(nombCompar);nombCompar=NULL;
 			break;
@@ -704,12 +702,11 @@ void atenderNuevaConexion(int sockEscucha,int conexiones,struct pollfd *ufdss,vo
 	ufdss[conexiones-1].fd=socketNuevo;
 	ufdss[conexiones-1].events=POLLIN;
 	log_debug(g_logger,"atenderNuevaConexion()==>Se atiende una conexion nueva recibida en el socket de escucha:%i y se la deriva al nuevo socket %i...",sockEscucha,socketNuevo);
-	printf("atenderNuevaConexion()==>Se atiende una conexion nueva recibida en el socket de escucha:%i y se la deriva al nuevo socket %i...",sockEscucha,socketNuevo);
-
-	printf("luego del realloc ufdsPLP quedando:\n");
+	//printf("atenderNuevaConexion()==>Se atiende una conexion nueva recibida en el socket de escucha:%i y se la deriva al nuevo socket %i...",sockEscucha,socketNuevo);
+	/*printf("luego del realloc ufdsPLP quedando:\n");
 	for(i=0;i<conexiones;i++){
 		printf("g_ufdss[%i].socket:%i\n",i,ufdss[i].fd);
-	}
+	}*/
 	funcionQueAtiende(socketNuevo);//derivo a 1 funcion que sigue atendiendo a la conexion -tanto para cpus como para programas- por viene como parametro
 }
 void atenderPrograma(int p_sockPrograma){
@@ -723,12 +720,12 @@ void atenderPrograma(int p_sockPrograma){
 
 	recibirMsg(p_sockPrograma,&mensajeProg);
 	log_debug(g_logger,"atenderPrograma()==>Se recibio un mensaje de un programa:");
-	printf("atenderPrograma()==>Se recibio un mensaje de un programa:\n");
+	//printf("atenderPrograma()==>Se recibio un mensaje de un programa:\n");
 
 	switch(mensajeProg.encabezado.codMsg){
 	case K_HANDSHAKE:
 		log_debug(g_logger,"atenderPrograma()==>mensaje de programa:K_HANDSHAKE");
-		printf("atenderPrograma()==>mensaje de programa:K_HANDSHAKE\n");
+		//printf("atenderPrograma()==>mensaje de programa:K_HANDSHAKE\n");
 		//programa manda el handshake=>pedir el codigo del script
 		liberarMsg(&mensajeProg);
 		mensajeProg.encabezado.codMsg=P_ENVIAR_SCRIPT;
@@ -738,7 +735,7 @@ void atenderPrograma(int p_sockPrograma){
 		break;
 	case K_ENVIO_SCRIPT:
 		log_debug(g_logger,"atenderPrograma()==>mensaje de programa:K_ENVIO_SCRIPT");
-		printf("atenderPrograma()==>mensaje de programa:K_ENVIO_SCRIPT\n");
+		//printf("atenderPrograma()==>mensaje de programa:K_ENVIO_SCRIPT\n");
 		//programa manda el codigo del script
 		codigo=malloc(mensajeProg.encabezado.longitud);
 		memcpy(codigo,mensajeProg.flujoDatos,mensajeProg.encabezado.longitud);
@@ -752,6 +749,7 @@ void atenderPrograma(int p_sockPrograma){
 		if(crearSegmentosYpcb(metadata,&pcb,longitud,codigo)!=0){
 			//error en la creacion de algun segmento=>denegar ejecucion a programa
 			log_debug(g_logger,"atenderPrograma()==>Error al crear alguno de los segmentos, se expulsa a el proceso...");
+			printf("***********ERROR: no hay suficiente espacio en UMV para todos los segmentos del programa==>expulsandolo...***********\n");
 			//mandarle mensaje a programa
 			mensajeProg.encabezado.codMsg=P_SERVICIO_DENEGADO;
 			mensajeProg.encabezado.longitud=0;
@@ -791,7 +789,7 @@ int crearSegmentosYpcb(t_medatada_program *p_metadata,t_pcb *p_pcb,int longitud,
 
 	id=asignarID(p_pcb);
 	log_debug(g_logger,"crearSegmentosYpcb()==>Se crearan los segmentos y el pcb del programa...");
-	printf("crearSegmentosYpcb()==>Se crearan los segmentos y el pcb del programa...\n");
+	//printf("crearSegmentosYpcb()==>Se crearan los segmentos y el pcb del programa...\n");
 
 	//PEDIR ESPACIO PARA EL SEGMENTO CODIGO
 	gs_mensajeUMV.encabezado.codMsg=U_CREAR_SEGMENTO;
@@ -800,7 +798,7 @@ int crearSegmentosYpcb(t_medatada_program *p_metadata,t_pcb *p_pcb,int longitud,
 	memcpy(gs_mensajeUMV.flujoDatos,&id,sizeof(uint16_t));
 	t_size tam=(t_size)(longitud);
 	memcpy(gs_mensajeUMV.flujoDatos+sizeof(uint16_t),&tam,sizeof(t_size));
-	printf("crearSegmentosYpcb()==>TAMANIO SEGEMNTO-CODIGO:%i\n",tam);
+	//printf("crearSegmentosYpcb()==>TAMANIO SEGEMNTO-CODIGO:%i\n",tam);
 	//ENVIANDO PEDIDO A UMV
 	enviarMsg(g_socketUMV,gs_mensajeUMV);
 	//RECIBIENDO CONTESTACION DE UMV
@@ -816,7 +814,7 @@ int crearSegmentosYpcb(t_medatada_program *p_metadata,t_pcb *p_pcb,int longitud,
 	gs_mensajeUMV.flujoDatos=realloc(gs_mensajeUMV.flujoDatos,sizeof(uint16_t)+sizeof(t_size));
 	memcpy(gs_mensajeUMV.flujoDatos,&id,sizeof(uint16_t));
 	memcpy(gs_mensajeUMV.flujoDatos+sizeof(uint16_t),&g_tamanioPila,sizeof(t_size));
-	printf("crearSegmentosYpcb()==>TAMANIO SEGMENTO-PILA:%i\n",g_tamanioPila);
+	//printf("crearSegmentosYpcb()==>TAMANIO SEGMENTO-PILA:%i\n",g_tamanioPila);
 	//ENVIANDO PEDIDO A UMV
 	enviarMsg(g_socketUMV,gs_mensajeUMV);
 	//RECIBIENDO CONTESTACION DE UMV
@@ -826,7 +824,7 @@ int crearSegmentosYpcb(t_medatada_program *p_metadata,t_pcb *p_pcb,int longitud,
 	liberarMsg(&gs_mensajeUMV);
 	log_debug(g_logger,"crearSegmentosYpcb()==>Se reservo el espacio para el segmento para la pila en umv...");
 
-	printf("crearSegmentosYpcb()==>TAMANIO SEGMENTO-ETIQUETAS:%i\n",p_metadata->instrucciones_size);
+	//printf("crearSegmentosYpcb()==>TAMANIO SEGMENTO-ETIQUETAS:%i\n",p_metadata->instrucciones_size);
 	//PEDIR ESPACIO PARA EL SEGMENTO ETIQUETAS
 	if(p_metadata->etiquetas_size!=0){
 		gs_mensajeUMV.encabezado.codMsg=U_CREAR_SEGMENTO;
@@ -851,7 +849,7 @@ int crearSegmentosYpcb(t_medatada_program *p_metadata,t_pcb *p_pcb,int longitud,
 	memcpy(gs_mensajeUMV.flujoDatos,&id,sizeof(int));
 	t_size tamanioIndice=p_metadata->instrucciones_size*sizeof(t_intructions);
 	memcpy(gs_mensajeUMV.flujoDatos+sizeof(uint16_t),&tamanioIndice,sizeof(t_size));
-	printf("crearSegmetnosYpcb()==>TAMANIO SEGMENTO-INDICE-CODIGO:%i\n",tamanioIndice);
+	//printf("crearSegmetnosYpcb()==>TAMANIO SEGMENTO-INDICE-CODIGO:%i\n",tamanioIndice);
 	//ENVIANDO PEDIDO A UMV
 	enviarMsg(g_socketUMV,gs_mensajeUMV);
 	//RECIBIENDO CONTESTACION DE UMV
@@ -907,7 +905,7 @@ int crearSegmentosYpcb(t_medatada_program *p_metadata,t_pcb *p_pcb,int longitud,
 
 	//GRABANDO EN EL SEGMENTO INDICE_ETIQUETAS
 	if(p_metadata->etiquetas_size!=0){
-		printf("hay etiquetas, entonces semandaran a grabar en umv\n");
+		//printf("hay etiquetas, entonces semandaran a grabar en umv\n");
 		gs_mensajeUMV.encabezado.codMsg=U_ALMACENAR_BYTES;
 		gs_mensajeUMV.encabezado.longitud= p_metadata->etiquetas_size+sizeof(t_size)*3;//base+offset+tamanio+data
 		gs_mensajeUMV.flujoDatos=realloc(gs_mensajeUMV.flujoDatos,gs_mensajeUMV.encabezado.longitud);
@@ -1248,9 +1246,9 @@ void *hiloDespachador(void *sinUso){
 	log_debug(g_logger,"hiloDespachador()==>Se lanzo el hilo hiloDespachador...");
 
 	while(1){
-		printf("esperando elemento que llegue a (cola)listalistos...\n");
+		//printf("esperando elemento que llegue a (cola)listalistos...\n");
 		sem_wait(&sem_listaListos);
-		printf("llego a (cola)listalistos\n");
+		//printf("llego a (cola)listalistos\n");
 		pthread_mutex_lock(&mutex_listaListos);
 		//procesoAux=list_remove(listaListos,0);
 		procesoAux=queue_pop(colaListos);
@@ -1261,14 +1259,14 @@ void *hiloDespachador(void *sinUso){
 		listarListos();
 
 		sem_wait(&sem_listaCpu);
-		printf("llego una cpu libre a listaCpu\n");
+		//printf("llego una cpu libre a listaCpu\n");
 		pthread_mutex_lock(&mutex_listaCpu);
 		soquet=(int*)list_remove(listaCpuLibres,0);
 		pthread_mutex_unlock(&mutex_listaCpu);
 
 		memcpy(&soquet2,soquet,sizeof(int));
 		free(soquet);
-		printf("se enviara el mensaje con pcb+quantum+retardo a cpu\n");
+		//printf("se enviara el mensaje con pcb+quantum+retardo a cpu\n");
 
 		mensajeCPU.encabezado.codMsg=C_ENVIO_PCB;
 		mensajeCPU.encabezado.longitud=sizeof(t_pcb)+sizeof(uint32_t)*2;
@@ -1284,14 +1282,14 @@ void *hiloDespachador(void *sinUso){
 		memcpy(mensajeCPU.flujoDatos+sizeof(t_puntero)*5+sizeof(uint16_t)*2+sizeof(t_size),               &(procesoAux->pcb.tamanio_indice_etiquetas),  sizeof(t_size));
 		memcpy(mensajeCPU.flujoDatos+sizeof(t_puntero)*5+sizeof(uint16_t)*2+sizeof(t_size)*2,             &g_quantum,                             sizeof(int));
 		memcpy(mensajeCPU.flujoDatos+sizeof(t_puntero)*5+sizeof(uint16_t)*2+sizeof(t_size)*2+sizeof(int), &g_retardo,                             sizeof(int));
-
+		/*
 		printf("se envia a CPU el programa:\n");
 		printf("cursor_de_pila: %i\n",procesoAux->pcb.cursor_de_pila);
 		printf("id_proceso:     %i\n",procesoAux->pcb.id_proceso);
 		printf("segmento_codigo:%i\n",procesoAux->pcb.segmento_codigo);
 		printf("segmento_pila:  %i\n",procesoAux->pcb.segmento_pila);
 		printf("indice_codigo:  %i\n",procesoAux->pcb.indice_codigo);
-		printf("program_counter:%i\n",procesoAux->pcb.program_counter);
+		printf("program_counter:%i\n",procesoAux->pcb.program_counter);*/
 
 		enviarMsg(soquet2,mensajeCPU);
 		liberarMsg(&mensajeCPU);
@@ -1328,7 +1326,7 @@ void *hiloTerminarProcesos(void *sinUso){
 		pthread_mutex_unlock(&mutex_listaTerminados);
 		//se saco al proceos de listaTerminados
 		log_debug(g_logger,"hiloTerminarProcesos()==>Termino de ejecutarse y se expulsa el proceso id:%i",proceso->pcb.id_proceso);
-		printf("hiloTerminarProcesos()==>Termino de ejecutarse y se expulsa el proceso id:%i  soquet:%i\n",proceso->pcb.id_proceso,proceso->soquet_prog);
+		//printf("hiloTerminarProcesos()==>Termino de ejecutarse y se expulsa el proceso id:%i  soquet:%i\n",proceso->pcb.id_proceso,proceso->soquet_prog);
 		listarTerminados();
 		//PEDIR A UMV LIBERE TODOS LOS SEGMENTOS DEL PROCESO
 		mensaje.encabezado.codMsg=U_DESTRUIR_SEGMENTO;
@@ -1346,50 +1344,50 @@ void *hiloTerminarProcesos(void *sinUso){
 		enviarMsg(proceso->soquet_prog,mensaje);
 
 		liberarMsg(&mensaje);
-		printf("mensaje de desconexion a programa enviado\n");
+		//printf("mensaje de desconexion a programa enviado\n");
 
-		printf("antes de shotdown\n");
+		//printf("antes de shotdown\n");
 		shutdown(proceso->soquet_prog,0);
 
-		printf("socket :%i cerrado\n",proceso->soquet_prog);
+		//printf("socket :%i cerrado\n",proceso->soquet_prog);
 
 		//ELIMINANDO EL SOCKET DEL CONJUNTO QUE USA POLL
 		for(i=1;i<g_socketsAbiertos;i++){//buscar el n° de socket en g_ufdsPLP para sacarlo
 			if(g_ufdsPLP[i].fd==proceso->soquet_prog){
-				printf("encontre el soquet numero:%i en el g_ufds[%i]\n",proceso->soquet_prog,i);
+				//printf("encontre el soquet numero:%i en el g_ufds[%i]\n",proceso->soquet_prog,i);
 				break;
 			}
 		}
 
 		if(i!=g_socketsAbiertos-1){//no es el ultimo elemento=> hago el memcpy, si fuera el ultimo solo copiaria basura
 			int iteraciones=g_socketsAbiertos-i-1;
-			printf("iteraciones:%i\n",iteraciones);
+			//printf("iteraciones:%i\n",iteraciones);
 			for(z=0;z<iteraciones;z++){
 				memcpy(&g_ufdsPLP[i],&g_ufdsPLP[i+1],sizeof(struct pollfd)*(g_socketsAbiertos-i-1));
 				i++;
 				//memcpy(g_ufdsPLP+i,g_ufdsPLP+i+1,sizeof(struct pollfd)*(g_socketsAbiertos-i+1));
 			}
-			printf("recopie los ufds anteriores\n");
+			//printf("recopie los ufds anteriores\n");
 		}else{
-			printf("es el ultimo socket\n");
+			//printf("es el ultimo socket\n");
 		}
 		g_socketsAbiertos--;
 		int nuevoTam=sizeof(struct pollfd)*g_socketsAbiertos;
-		printf("***************************************************************\n");
-		printf("antes del realloc ufdsPLP\ng_socketsAbiertos:%i nuevoTam:%i\n",g_socketsAbiertos, nuevoTam);
+		/*printf("***************************************************************\n");
+		printf("antes del realloc ufdsPLP\ng_socketsAbiertos:%i nuevoTam:%i\n",g_socketsAbiertos, nuevoTam);*/
 		g_ufdsPLP=realloc(g_ufdsPLP,nuevoTam);
-		printf("luego del realloc ufdsPLP quedando:\n");
+		/*printf("luego del realloc ufdsPLP quedando:\n");
 		for(i=0;i<g_socketsAbiertos;i++){
 			printf("g_ufdsPLP[%i].socket:%i\n",i,g_ufdsPLP[i].fd);
 		}
-		printf("***************************************************************\n");
+		printf("***************************************************************\n");*/
 		//close(proceso->soquet_prog);
 		//shutdown(proceso->soquet_prog,2);
-		printf("luego del close(proceso.soquet) ufdsPLP quedando:\n");
+		/*printf("luego del close(proceso.soquet) ufdsPLP quedando:\n");
 			for(i=0;i<g_socketsAbiertos;i++){
 				printf("g_ufdsPLP[%i].socket:%i\n",i,g_ufdsPLP[i].fd);
 			}
-			printf("***************************************************************\n");
+			printf("***************************************************************\n");*/
 		free(proceso);
 	}
 	return NULL;
@@ -1441,20 +1439,18 @@ void *hiloSemaforos(void *sinUso){
 	void desbloquear(char*clave,t_semaforo* semaforo){
 		printf("semaforo clave:%s desbloquear:%i colaVacia:%i\n",semaforo->nombre,semaforo->desbloquear,queue_is_empty(semaforo->bloqueados));
 		if((semaforo->desbloquear)&&(!queue_is_empty(semaforo->bloqueados))){
-			listarBloqueados();
 			log_debug(g_logger,"hiloSemaforos()==>Se desbloqueara un proceso bloqueado en el semaforo %s",semaforo->nombre);
 
 			pthread_mutex_lock(&mutex_semaforos);
 			t_nodo_proceso *proceso=queue_pop(semaforo->bloqueados);
 			semaforo->desbloquear=false;
 			pthread_mutex_unlock(&mutex_semaforos);
+			listarBloqueados();
 
 			pthread_mutex_lock(&mutex_listaListos);
 			//list_add_in_index(listaListos,list_size(listaListos),proceso);
 			printf("******************-*-*-*-*-*-hiloSemaforos()==>pongo un proceso en listalistos\n");
-			listarListos();
 			queue_push(colaListos,proceso);
-			listarListos();
 			pthread_mutex_unlock(&mutex_listaListos);
 			sem_post(&sem_listaListos);
 			listarListos();
@@ -1462,17 +1458,13 @@ void *hiloSemaforos(void *sinUso){
 	}
 
 	while(1){
-		printf(".......en while de hiloSemaforos esperando en el semaforo......\n");
+		//printf(".......en while de hiloSemaforos esperando en el semaforo......\n");
 		sem_wait(&sem_semaforos);
-		printf("......se desbloqueo el semaforo y lo vamos a buscar al diccionario..................\n");
+		//printf("......se desbloqueo el semaforo y lo vamos a buscar al diccionario..................\n");
 		//dictionary_iterator(diccio_semaforos,(void*)desbloquear);
 		for(i=0;i<diccio_semaforos->table_max_size;i++){
-
 			t_hash_element *elemento=diccio_semaforos->elements[i];
-
 			while (elemento != NULL) {
-
-
 				t_semaforo *elementoSem=elemento->data;
 				if(!(queue_is_empty(elementoSem->bloqueados))&&(elementoSem->desbloquear)){
 					log_debug(g_logger,"hiloSemaforos()==>Se desbloqueara un proceso bloqueado en el semaforo %s",elementoSem->nombre);
@@ -1484,7 +1476,7 @@ void *hiloSemaforos(void *sinUso){
 
 					pthread_mutex_lock(&mutex_listaListos);
 					//list_add_in_index(listaListos,list_size(listaListos),proceso);
-					printf("******************-*-*-*-*-*-hiloSemaforos()==>pongo un proceso en listalistos\n");
+					//printf("******************-*-*-*-*-*-hiloSemaforos()==>pongo un proceso en listalistos\n");
 					listarListos();
 					queue_push(colaListos,proceso);
 					listarListos();
@@ -1492,11 +1484,8 @@ void *hiloSemaforos(void *sinUso){
 					sem_post(&sem_listaListos);
 					listarListos();
 				}
-
-
 				//closure(element->key, element->data);
 				//element = element->next;
-
 			}
 		}
 	}
@@ -1531,7 +1520,7 @@ void listarListos(){
 	printf("LISTALISTOS-tamanio: %i\n",queue_size(colaListos));
 	for(i=0;i<queue_size(colaListos);i++){
 		t_nodo_proceso *prog= list_get(colaListos->elements,i);//queue_peek(colaListos);
-		printf(" -->idProceso:%i (program counter:%i)--->",prog->pcb.id_proceso,prog->pcb.program_counter);
+		printf(" -->idProceso:%i (program counter:%i)",prog->pcb.id_proceso,prog->pcb.program_counter);
 	}
 	if(queue_size(colaListos)!=0)printf("\n");
 }
@@ -1716,16 +1705,14 @@ void ponerCpuDisponible(int p_soquet){
 	extern sem_t            sem_listaCpu;
 	extern pthread_mutex_t  mutex_listaCpu;
 
-	printf("ponerCpuDisponible()==>antes del malloc\n");
 	int *soque=malloc(sizeof(int));//NO HACER FREE() LO CARGO EN LA LISTACPULIBRES LUEGO EN EL DESPACHADOR LO LIBERO
-	printf("poniendo cpu a libre\n");
+	//printf("poniendo cpu a libre\n");
 	//memcpy(soque,&p_sockCPU,sizeof(int));
 	*soque=p_soquet;
 	pthread_mutex_lock(&mutex_listaCpu);
 	list_add(listaCpuLibres,soque);
 	pthread_mutex_unlock(&mutex_listaCpu);
 	sem_post(&sem_listaCpu);
-	printf("chau de ponerCpuDisponible\n");
 }
 void pasarProcesoATerminados(t_nodo_proceso *proceso){
 	extern t_list          *listaTerminados;
@@ -1734,13 +1721,10 @@ void pasarProcesoATerminados(t_nodo_proceso *proceso){
 	extern pthread_mutex_t  mutex_listaTerminados;
 
 	//printf("pasarProcesoATerminados()==>llegando con el proceso id:%i seg_pila:%i\n",proceso->pcb.id_proceso,proceso->pcb.segmento_pila);
-	printf("todo ok?\n");
 	pthread_mutex_lock(&mutex_listaTerminados);
 	list_add(listaTerminados,proceso);
 	pthread_mutex_unlock(&mutex_listaTerminados);
 	sem_post(&sem_listaTerminados);
 	sem_post(&sem_multiprog);
-	printf("antes de listar Terminados\n");
 	listarTerminados();
-	printf("luego de listarlos, chau\n");
 }

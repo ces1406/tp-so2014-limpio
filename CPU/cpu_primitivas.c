@@ -18,14 +18,14 @@ if(!g_expulsar){
 	t_size tamanio    =sizeof(t_nombre_variable);
 	t_puntero base    =g_pcb.segmento_pila;
 	t_size offset     =dictionary_size(g_diccionario_var)*(sizeof(t_byte)+sizeof(t_palabra))+(g_pcb.cursor_de_pila-g_pcb.segmento_pila);     //cada varibale ocupa 5 bytes(1byte:nombre+4bytes:contenido)
-	printf(":::primitiva_definirVariable:::\n");
-	printf("    mandando a guardar la var:%c base:%i offset:%i tam:%i\n",variable,base,offset,tamanio);
+	printf(":::primitiva--->definir Varible:::\n");
+	printf("            --->mandando a guardar var:%c base:%i offset:%i tamanio:%i<---\n",variable,base,offset,tamanio);
 	log_debug(g_logger,":::primitiva_definirVariable:::\n    mandando a guardar la var:%c base:%i offset:%i tam:%i",variable,base,offset,tamanio);
 
 	//ENVIA MENSAJE A UMV CON: base+offset+tamaño+contenido a almacenar
 	if(escrituraUMV(base,offset,tamanio,(t_byte *)&variable)==-1){//=>segmentation fault?
 		//error--->segmento sobrepasado
-		printf("error de escritura del nombre de la variable en umv\n");
+		printf("error de escritura de nombre de variable en umv -sEGMENTATIoN FAuLT-\n");
 		log_debug(g_logger,"Error en la escritura del nombre de una variable en umv...");
 		falloMemoria();
 	}else{
@@ -45,13 +45,13 @@ t_puntero primitiva_obtenerPosicionVariable(t_nombre_variable variable){
 	extern bool          g_expulsar;
 
 if(!g_expulsar){
-	printf(":::primitiva_obtenerPosicionVariable %c:::\n",variable);
+	printf(":::primitiva--->obtener posicion variable %c:::\n",variable);
 	char *clave=malloc(sizeof(char)*2);
 	memcpy(clave,&variable,sizeof(char)*2);
 	clave[1]='\0';
 	t_var *varBuscada=dictionary_get(g_diccionario_var,clave);
 	ptr=varBuscada->direccion_var;
-	printf("    se busco variable:%c y se encontro  t_var.nombre:%s  t_var.dirVar-offset-:%i\n",variable,varBuscada->nombre_var,varBuscada->direccion_var);
+	printf("            --->variable:%c direccion_var-oFFset:%i\n<---",varBuscada->nombre_var,varBuscada->direccion_var);
 	log_debug(g_logger,":::primitiva_obtenerPosicionVariable:::\n    se busco variable:%c y se encontro  t_var.nombre:%s  t_var.dirVar-offset-:%i",variable,varBuscada->nombre_var,varBuscada->direccion_var);
 	free(clave);
 }
@@ -66,17 +66,17 @@ t_valor_variable primitiva_dereferenciar (t_puntero ptr_variable){
 	u_int32_t var;
 
 if(!g_expulsar){
-	printf(":::primitiva_dereferenciar:::\n");
+	printf(":::primitiva--->derreferenciar:::\n");
 	log_debug(g_logger,":::primitiva_dereferenciar:::");
 	//ENVIANDO PEDIDO DE LECTURA A UMV
 	if(lecturaUMV(g_pcb.segmento_pila,ptr_variable,sizeof(t_valor_variable))==-1){
 		//error
-		printf("error en la lectura en segmento pila de la variable\n");
+		printf("            --->eRRoR en la lectura de la variable en segmento pila<---\n");
 		log_debug(g_logger,"Error en la lectura en umv de una variable...");
 		falloMemoria();
 	}else{
 		memcpy(&var,g_mensaje.flujoDatos,sizeof(u_int32_t));
-		printf("    en primitiva_dereferenciar con la dir_de_variable:%i y el valor devuelto de umv:%i\n",ptr_variable,var);
+		printf("            --->dIr_de_variable:%i  valor deVuelto de uMv:%i\n<---",ptr_variable,var);
 		log_debug(g_logger,"    primitiva_dereferenciar---> dir_de_variable:%i---> valor devuelto de umv:%i",ptr_variable,(int)*(g_mensaje.flujoDatos));
 		memcpy(&variable,g_mensaje.flujoDatos,sizeof(t_valor_variable));
 		liberarMsg();
@@ -90,12 +90,12 @@ void primitiva_asignar(t_puntero ptr_variable, t_valor_variable variable){
 	extern bool   g_expulsar;
 
 if(!g_expulsar){
-	printf(":::primitiva_asignar:::\n");
-	printf("    se escribira en la dir de variable:%i  el valor_variable:%i\n",ptr_variable,variable);
+	printf(":::primitiva--->asIgnar:::\n");
+	printf("            --->escribir en la direccion de la var:%i  vaLor:%i\n",ptr_variable,variable);
 	log_debug(g_logger,":::primitiva_asignar:::\n    se escribira en la dir de variable:%i  el valor_variable:%i",ptr_variable,variable);
 	if(escrituraUMV(g_pcb.segmento_pila,ptr_variable,sizeof(t_palabra),(t_byte *)&variable)==-1){
 		//ERROR DE ESCRITURA
-		printf("error en escritura en el segmento pila del valor de la variable\n");
+		printf("            --->ERRoR en escritura en el segmento pila del valor de la variable\n");
 		falloMemoria();
 	}
 }
@@ -117,7 +117,7 @@ if(!g_expulsar){
 		if(g_desconexion){
 			expulsarProceso();
 		}
-		printf(":::primitiva_finalizar -fin del programa-:::\n");
+		printf(":::primitiva--->finalizar -FIN dEL PRoGRAMA-:::\n");
 		//FINALIZAR EJECUCION DEL PROGRAMA
 		g_mensaje.encabezado.codMsg=K_EXPULSADO_FIN_PROG;
 		cargarPcb();
@@ -129,28 +129,28 @@ if(!g_expulsar){
 		g_expulsar=true;
 	}else{
 		//FIN DE UNA FUNCION_SIN_RETORNO
-		printf(":::primitiva_finalizar -fin de una funcion sin retorno-:::\n");
+		printf(":::primitiva--->finalizar -fin dE una funcion sin retorno-:::\n");
 		log_debug(g_logger,":::primitiva_finalizar -fin de una funcion sin retorno-:::");
 		t_puntero cursorPila=g_pcb.cursor_de_pila;
 		//-->Desapilando el program counter
 		if(lecturaUMV(g_pcb.segmento_pila,g_pcb.cursor_de_pila-g_pcb.segmento_pila-sizeof(uint16_t),sizeof(uint16_t))==-1){
 			//error---->Nunca deberia llegar aca
-			printf("error de lectura del program_counter de retorno\n");
+			printf("            --->ERRoR de lectura del program counter de retorno<---\n");
 			log_debug(g_logger,"Error de lectura en umv del program counter para retornar...");
 		}else{
 			memcpy(&g_pcb.program_counter,g_mensaje.flujoDatos,sizeof(uint16_t));
 			liberarMsg();
-			printf("    nuevo program_counter:%i\n",g_pcb.program_counter);
+			printf("            --->nuevo program coUnter:%i\n",g_pcb.program_counter);
 		}
 		//-->Desapilando el cursor_de_pila
 		if(lecturaUMV(g_pcb.segmento_pila,g_pcb.cursor_de_pila-g_pcb.segmento_pila-sizeof(t_palabra)-sizeof(uint16_t),sizeof(t_palabra))==-1){
 			//error---->Nunca deberia llegar aca
-			printf("error de lectura del cursor_pila de retorno\n");
+			printf("            --->ERRoR de lectura del cursor pila de retorno<---\n");
 			log_debug(g_logger,"Error de lectura en umv del cursor_de_pila");
 		}else{
 			memcpy(&g_pcb.cursor_de_pila,g_mensaje.flujoDatos,sizeof(t_palabra));
 			liberarMsg();
-			printf("    nuevo cursor_de_pila:%i\n",g_pcb.cursor_de_pila);
+			printf("            --->nuevo curSor_de_pIla:%i<---\n",g_pcb.cursor_de_pila);
 		}
 		//LIMPIAR EL DICCIONARIO DE VARIABLES DEL CONTEXTO A ABANDONAR
 		 dictionary_clean_and_destroy_elements(g_diccionario_var,(void*)liberarElementoDiccio);
@@ -170,12 +170,12 @@ void primitiva_irAlLabel(t_nombre_etiqueta nombreEtiqueta){
 
 if(!g_expulsar){
 
-	printf(":::primitiva_irAlLabel -%s-:::\n",nombreEtiqueta);
+	printf(":::primitiva--->irAlLabel -%s-:::\n",nombreEtiqueta);
 	log_debug(g_logger,":::primitiva_irAlLabel -%s-:::",nombreEtiqueta);
 	siguienteInstruc=metadata_buscar_etiqueta(nombreEtiqueta,g_infoEtiquetas,g_pcb.tamanio_indice_etiquetas);
 	if(siguienteInstruc==-1){
 		//ERROR
-		printf("error en la busqueda de la etiqueta:%s en el char *etiquetas\n",nombreEtiqueta);
+		printf("             --->ERRoR en la busqueda de la etiqueta:%s en el chaR*etiquetas\n",nombreEtiqueta);
 	}else{
 		//cambiar la linea de ejecucion a siguienteInstruc
 		printf("    metadata_buscar_etiqueta() dio: siguienteInstruccion:%i\n",siguienteInstruc);
@@ -192,7 +192,7 @@ void primitiva_llamarSinRetorno(t_nombre_etiqueta etiqueta){
 	uint16_t              pcAnterior=g_pcb.program_counter;
 
 if(!g_expulsar){
-	printf(":::primitiva_llamarSinRetorno -%s-:::\n",etiqueta);
+	printf(":::primitiva--->llamar sIn reTorno -%s-:::\n",etiqueta);
 	log_debug(g_logger,":::primitiva_llamarSinRetorno -%s-:::",etiqueta);
 	//PONER EL program_counter EN LA DIRECCION DE LA FUNCION
 	primitiva_irAlLabel(etiqueta);
@@ -202,16 +202,16 @@ if(!g_expulsar){
 	offset=g_pcb.tamanio_contexto_actual*(sizeof(t_palabra)+sizeof(t_byte));
 	if(escrituraUMV(g_pcb.segmento_pila,g_pcb.cursor_de_pila-g_pcb.segmento_pila+offset,sizeof(t_palabra),(t_byte*)&g_pcb.cursor_de_pila)==-1){
 		//error--->segemnto de pila sobrepasado
-		printf("error en la escritura en umv del cursor_de_pila\n");
+		printf("           --->ERRoR en la escritura en umv del cursor de pila\n");
 		log_debug(g_logger,"Error de escritura en umv del cursor de pila viejo...");
 		falloMemoria();
 	}else{
 		//APILAR pcb.program_counter incrementado en uno
 		offset=offset+sizeof(t_palabra);
-		printf("    program_counter apilado:%i\n",pcAnterior);
+		printf("            --->prOgram cOUnter apiladO:%i<---\n",pcAnterior);
 		if(escrituraUMV(g_pcb.segmento_pila,g_pcb.cursor_de_pila-g_pcb.segmento_pila+offset,sizeof(uint16_t),(t_byte*)&pcAnterior)==-1){
 			//error--->segmento de pila sobrepasado
-			printf("error en la escrituraen umv del program_counter incrementado en 1 a abandonar\n");
+			printf("             --->ERRoR eN LA EscRITuRA dEL PRoGRAM couNTER\n");
 			falloMemoria();
 		}else{
 			//SETEAR pcb.tamaño_contexto_actual
@@ -230,14 +230,14 @@ void primitiva_llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_reto
 	int                   offset;
 
 if(!g_expulsar){
-	printf(":::primitiva_llamarConRetorno:::\n");
+	printf(":::primitiva--->llamar cOn retorno:::\n");
 	log_debug(g_logger,":::primitiva_llamarConRetorno:::");
 	primitiva_llamarSinRetorno(etiqueta);
 	//ADEMAS APILAR LA DIR DE RETORNO
 	offset=g_pcb.cursor_de_pila-g_pcb.segmento_pila;
 	if(escrituraUMV(g_pcb.segmento_pila,offset,sizeof(t_puntero),(t_byte*)&donde_retornar)==-1){
 		//error--->segmento de pila sobrepasado
-		printf("error al apilar la direccion del resultado de la funcion\n");
+		printf("            --->ERRoR Al ApILAR LA dIREccIoN DEL REsuLTADo dE lA FuNcIoN\n");
 		falloMemoria();
 	}else{
 		//MOVER EL CURSOR DE PILA YA QUE AGREGAMOS ESA DIR DE RETORNO
@@ -255,11 +255,9 @@ void primitiva_imprimir(t_valor_variable valor){
 
 if(!g_expulsar){
 	log_debug(g_logger,":::primitiva_imprimir:::  VALOR: %i",(int)valor);
-	printf(":::primitiva_imprimir:::\n");
-	printf("***************************************************************\n");
+	printf(":::primitiva--->imprimir:::\n");
 	printf("***************************************************************\n");
 	printf("************************VALOR: %i******************************\n",(int)valor);
-	printf("***************************************************************\n");
 	printf("***************************************************************\n");
 
 	g_mensaje.encabezado.codMsg=K_IMPRIMIR_VAR;
@@ -277,18 +275,18 @@ void primitiva_retornar(t_valor_variable retorno){
 	extern t_log        *g_logger;
 	t_puntero            dirRetorno;
 
-	printf(":::primitiva_retornar:::\n");
+	printf(":::primitiva--->REToRNAR:::\n");
 	log_debug(g_logger,":::primitiva_retornar:::\n");
 	//desapilando la dir de retorno del resultado
 	if(lecturaUMV(g_pcb.segmento_pila,g_pcb.cursor_de_pila-g_pcb.segmento_pila-sizeof(t_puntero),sizeof(t_puntero))==-1){
 		//error---->no deberia llegar aca
-		printf("error en la lectura de la dir de retorno del resultado\n");
+		printf("            --->ERRoR EN LA LEcTuRA dE LA DIR DE REToRNo DEL REsuLTADo\n");
 	}
 	//guardando el resultado "retorno" en esa direccion
 	memcpy(&dirRetorno,g_mensaje.flujoDatos,sizeof(t_puntero));
 	if(escrituraUMV(g_pcb.segmento_pila,dirRetorno,sizeof(t_palabra),(t_byte *)&retorno)==-1){
 		//error---->no deberia llegar aca
-		printf("error en la escritura del resultado de la funcion en la dir de devollucion\n");
+		printf("            --->ERRoR EN LA EscrITuRA dEL REsuLTADo dE lA FuNcIoN en la dir de devollucion\n");
 	}
 	g_pcb.cursor_de_pila=g_pcb.cursor_de_pila-sizeof(t_puntero);
 	primitiva_finalizar();
@@ -327,7 +325,7 @@ void primitiva_imprimirTexto(char* texto){
 	extern t_pcb  g_pcb;
 	extern t_log *g_logger;
 
-	printf(":::primitiva_imprimirTexto:::\n");
+	printf(":::primitiva--->imprimirTexto:::\n");
 	log_debug(g_logger,":::primitiva_imprimirTexto:::\n  texto:%s",texto);
 
 	g_mensaje.encabezado.codMsg=K_IMPRIMIR_TXT;
@@ -349,7 +347,7 @@ t_valor_variable primitiva_obtenerValorCompartida(t_nombre_compartida variable){
 	t_valor_variable varCompartida;
 
 if(!g_expulsar){
-	log_debug(g_logger,":::primitiva_obtenerValorCompartida:::   var:%s",variable);
+	log_debug(g_logger,":::primitiva--->obtenerValorCompartida:::   var:%s",variable);
 	printf(":::primitiva_obtenerValorCompartida:::\n");
 
 	g_mensaje.encabezado.codMsg=K_PEDIDO_VAR_GL;
@@ -364,7 +362,7 @@ if(!g_expulsar){
 	if(g_mensaje.encabezado.codMsg!=VALOR_COMPARTIDA_OK){
 		//error de acceso a esa variable--->el codigo hace referencia a una var compartida que no existe
 		log_debug(g_logger,"Error en la obtencion del valor de una variable compartida...");
-		printf(":::primitiva_obternerValorCompartida==>se referencio a una var compartida inexistente:::\n");
+		printf("            --->se referencio a una var compartida inexistente<---\n");
 		g_expulsar=true;
 		g_quantumGastado=g_quantum;
 		liberarEstructuras();
@@ -373,7 +371,7 @@ if(!g_expulsar){
 		memcpy(&varCompartida,g_mensaje.flujoDatos,sizeof(t_valor_variable));
 	}
 	liberarMsg();
-	printf("    se trajo el valor %i\n",varCompartida);
+	printf("            --->se trajo el valor %i<---\n",varCompartida);
 }
 	return varCompartida;
 }
@@ -388,7 +386,7 @@ t_valor_variable primitiva_asignarValorCompartida(t_nombre_compartida variable, 
 	//t_valor_variable valorAsignado;
 
 if(!g_expulsar){
-	printf(":::primitiva_asignarValorCompartida:::\n");
+	printf(":::primitiva--->asignarValorCompartida:::\n");
 	log_debug(g_logger,":::primitiva_asignarValorCompartida:::");
 
 	g_mensaje.encabezado.codMsg=K_ASIGNAR_VAR_GL;
@@ -397,15 +395,15 @@ if(!g_expulsar){
 	memcpy(g_mensaje.flujoDatos,&g_pcb.id_proceso,sizeof(uint16_t));
 	memcpy(g_mensaje.flujoDatos+sizeof(uint16_t),variable,strlen(variable));
 	memcpy(g_mensaje.flujoDatos+sizeof(uint16_t)+strlen(variable),&valor,sizeof(t_valor_variable));
-	printf("    enviando pedido de asignacion de la varComapartida:%s valor:%i\n",variable,valor);
+	printf("            ---> enviando pedido de asignacion de la varComapartida:%s valor:%i<---\n",variable,valor);
 	enviarMsg(g_socketKernel,g_mensaje);
 	//recibiendo la contestacion
 	recibirMsg(g_socketKernel,&g_mensaje);
-	printf("se recibio contestacion codMsg:%i\n",g_mensaje.encabezado.codMsg);
+	//printf("se recibio contestacion codMsg:%i\n",g_mensaje.encabezado.codMsg);
 	if(g_mensaje.encabezado.codMsg!=VALOR_COMPARTIDA_OK){
 		//error de acceso a esa variable
 		log_debug(g_logger,"Error en la asignacion de un valor a una variable compartida...\n");
-		printf(":::primitiva_asignarValorCompartida==>se referencio a una var compartida inexistente:::\n");
+		printf("            --->se referencio a una var compartida inexistente<---\n");
 		g_expulsar=true;
 		g_quantumGastado=g_quantum;
 		liberarEstructuras();
@@ -426,7 +424,7 @@ void primitiva_entradaSalida(t_nombre_dispositivo dispositivo, int tiempo){
 	//char* contenidoPcb=NULL;
 
 	log_debug(g_logger,":::primitiva_entradaSalida:::");
-	printf(":::primitiva_entradaSalida:::\n");
+	printf(":::primitiva--->entradaSalida:::\n");
 	g_mensaje.encabezado.codMsg=K_EXPULSADO_ES;//serializado: pcb+dispositivo+tiempo
 	cargarPcb();
 	//contenidoPcb=malloc(strlen(g_mensaje.flujoDatos));
@@ -454,7 +452,7 @@ void primitiva_signal(t_nombre_semaforo id_semaforo){
 	extern bool   g_expulsar;
 	extern t_pcb  g_pcb;
 
-	log_debug(g_logger,":::primitiva_signal:::");
+	log_debug(g_logger,":::primitiva--->signal:::");
 	printf(":::primitiva_signal:::\n");
 	g_mensaje.encabezado.codMsg=K_SIGNAL;
 	g_mensaje.encabezado.longitud=strlen(id_semaforo)+sizeof(uint16_t);//serializado:id_proceso+id_semaforo
@@ -465,11 +463,11 @@ void primitiva_signal(t_nombre_semaforo id_semaforo){
 	liberarMsg();
 
 	//recibiendo contestacion
-	printf("    esperando contestacion de kernel.....\n");
+	//printf("    esperando contestacion de kernel.....\n");
 	recibirMsg(g_socketKernel,&g_mensaje);
 	if(g_mensaje.encabezado.codMsg!=C_SIGNAL_OK){
 		log_debug(g_logger,"Error en singal, semaforo inexistente...\n");
-		printf(":::primitiva_signal==>se referencio a un semaforo inexistente:::\n");
+		printf("            --->se referencio a un semaforo inexistente<---\n");
 		g_expulsar=true;
 		g_quantumGastado=g_quantum;
 		liberarEstructuras();
@@ -486,7 +484,7 @@ void primitiva_wait(t_nombre_semaforo id_semaforo){
 	extern t_pcb  g_pcb;
 
 	log_debug(g_logger,":::primitiva_wait:::");
-	printf(":::primitiva_wait:::\n");
+	printf(":::primitiva--->wait:::\n");
 	g_mensaje.encabezado.codMsg=K_WAIT;
 	g_mensaje.encabezado.longitud=strlen(id_semaforo)+sizeof(uint16_t);//serializado:id_proceso+id_semaforo
 	g_mensaje.flujoDatos=realloc(g_mensaje.flujoDatos,g_mensaje.encabezado.longitud);
@@ -495,19 +493,19 @@ void primitiva_wait(t_nombre_semaforo id_semaforo){
 
 	enviarMsg(g_socketKernel,g_mensaje);
 	//recibiendo contestacion
-	printf("    esperando contestacion de kernel.....\n");
+	//printf("    esperando contestacion de kernel.....\n");
 	recibirMsg(g_socketKernel,&g_mensaje);
 
 	if(g_mensaje.encabezado.codMsg!=C_WAIT_OK){
 		if(g_mensaje.encabezado.codMsg==C_ERROR){
 			log_debug(g_logger,"Error en singal, semaforo inexistente...\n");
-			printf(":::primitiva_wait==>se referencio a un semaforo inexistente:::\n");
+			printf("            --->se referencio a un semaforo inexistente<---\n");
 			g_expulsar=true;
 			g_quantumGastado=g_quantum;
 			liberarEstructuras();
 			//=>kernel ya tomo nota y va a expulsar al proceso=>termino su ejecucion y nada mas...
 		}else{
-			printf("    se recibio que el semaforo esta ocupado\n");
+			printf("            --->semaforo ocupado<---\n");
 			//hay que desalojar al proceso
 			g_mensaje.encabezado.codMsg=K_EXPULSADO_WAIT;
 			cargarPcb();

@@ -180,15 +180,15 @@ void aceptarPcb(){
 	liberarMsg();
 
 	printf("\n*********acEptar_pcb**************\n");
-	printf("quantum:          %i\n",g_quantum);
-	printf("retardo:          %i\n",g_retardo);
-	printf("programCounter:   %i\n",g_pcb.program_counter);
-	printf("indice_codigo:    %i\n",g_pcb.indice_codigo);
-	printf("id_proceso:       %i\n",g_pcb.id_proceso);
-	printf("segmento_codigo:  %i\n",g_pcb.segmento_codigo);
-	printf("segmento_pila:    %i\n",g_pcb.segmento_pila);
-	printf("cursor_de_pila:   %i\n",g_pcb.cursor_de_pila);
-	printf("indice_etiquetas: %i\n",g_pcb.indice_etiquetas);
+	printf("QUANTUM------------->%i\n",g_quantum);
+	printf("RETARDO------------->%i\n",g_retardo);
+	printf("PROGRAMcOUNTER------>%i\n",g_pcb.program_counter);
+	printf("INDICEcODIGO-------->%i\n",g_pcb.indice_codigo);
+	printf("idPROCESO----------->%i\n",g_pcb.id_proceso);
+	printf("SEGMENTOcODIGO------>%i\n",g_pcb.segmento_codigo);
+	printf("SEGMENTOpILA-------->%i\n",g_pcb.segmento_pila);
+	printf("CURSORdEpILA-------->%i\n",g_pcb.cursor_de_pila);
+	printf("INDICEdEeTIQUETAS--->%i\n",g_pcb.indice_etiquetas);
 	log_debug(g_logger,"Se recibio el pcb de un proceso con:\n");
 	log_debug(g_logger,"quantum:           %i",g_quantum);
 	log_debug(g_logger,"retardo:           %i",g_retardo);
@@ -201,7 +201,6 @@ void aceptarPcb(){
 	log_debug(g_logger,"indice_etiquetas:  %i",g_pcb.indice_etiquetas);
 	//printf("tamanio_indice_etiquetas:%i\n",g_pcb.tamanio_indice_etiquetas);
 	//printf("tamanio_contexto_actual:%i\n",g_pcb.tamanio_contexto_actual);
-
 }
 void handshakeConUmv(){
 	extern int    g_socketUMV;
@@ -304,7 +303,7 @@ void ejecutarProceso(){
 			exit(EXIT_FAILURE);
 		}
 		g_mensaje.flujoDatos[g_mensaje.encabezado.longitud-1]='\0';//hace quilombo por que esa pos es \n ???
-		printf("\n**********************me traje para ejecutar la linea:%s *************************\n",g_mensaje.flujoDatos);
+		printf("\n*****************LINEA TRAIDA DE UMV PARA EJECUTAR-->%s<--********************\n",g_mensaje.flujoDatos);
 		log_debug(g_logger,"*******ejecutando la linea traida de umv:%s********",g_mensaje.flujoDatos);
 		listarDiccio();
 		lineaCodigo=malloc(g_mensaje.encabezado.longitud);
@@ -342,8 +341,8 @@ int lecturaUMV(t_puntero base,t_size offset,t_size tamanio){
 
 	//printf("en lectura con base:%i offset:%i y tamanio:%i\n",base,offset,tamanio);
 	log_debug(g_logger,"Pedido de lectura a umv:\nbase:%i offset:%i tamanio:%i",base,offset,tamanio);
-	printf("*****LECTURA UMV*****\n");
-	printf("Pedido de lectura a umv:\nbase:%i offset:%i tamanio:%i\n",base,offset,tamanio);
+	printf("*****PEDIDO dE LECTURA UMV*****\n");
+	printf("bASE:%i oFFSEt:%i tAMANIo:%i\n",base,offset,tamanio);
 	//PEDIDO A UMV DE LECTURA
 	g_mensaje.encabezado.codMsg=U_PEDIDO_BYTES;
 	g_mensaje.encabezado.longitud=sizeof(t_puntero)+2*sizeof(t_size);
@@ -362,7 +361,7 @@ int lecturaUMV(t_puntero base,t_size offset,t_size tamanio){
 	if(g_mensaje.encabezado.codMsg!=C_PEDIDO_OK){
 		//error
 		log_debug(g_logger,"error de lectura en umv\n");
-		printf("en lecturaumv la respuesta que llego es ERROR o sea return -1 mensaje.codMsg:%i \n",g_mensaje.encabezado.codMsg);
+		printf("eRROR dE LECTURA\n");
 		return -1;
 	}
 /*
@@ -398,8 +397,6 @@ int escrituraUMV(t_puntero base,t_size offset,t_size tamanio,const t_byte* conte
 	int i;
 	t_entero_pack b;*/
 
-
-
 	//PEDIDO A UMV DE ESCRITURA
 	g_mensaje.encabezado.codMsg=U_ALMACENAR_BYTES;
 	g_mensaje.encabezado.longitud=sizeof(t_puntero)+2*sizeof(t_size)+tamanio;
@@ -407,14 +404,13 @@ int escrituraUMV(t_puntero base,t_size offset,t_size tamanio,const t_byte* conte
 
 	log_debug(g_logger,"Pedido de escritura a umv:\nbase:%i offset:%i tamanio:%i contenido(primer caracter):%c",base,offset,tamanio,contenido[0]);
 
-	printf("*****ESCRITURA UMV*****\n");
-	printf("Pedido de escritura a umv base:%i offset:%i tamanio:%i\n",base,offset,tamanio);
+	printf("*****PEDIDO dE ESCRITURA UMV*****\n");
+	printf("bASE:%i oFFSET:%i TAMANIo:%i\n",base,offset,tamanio);
 
 	memcpy(g_mensaje.flujoDatos,                                      &base,            sizeof(t_puntero));
 	memcpy(g_mensaje.flujoDatos+sizeof(t_puntero),                    &offset,          sizeof(t_size));
 	memcpy(g_mensaje.flujoDatos+sizeof(t_puntero)+sizeof(t_size),     &tamanio,         sizeof(t_size));
 	memcpy(g_mensaje.flujoDatos+sizeof(t_puntero)+2*sizeof(t_size),   contenido,        tamanio);
-
 /*
 	if(tamanio==1){
 		memcpy(&d,contenido,sizeof(t_byte));
@@ -441,6 +437,7 @@ int escrituraUMV(t_puntero base,t_size offset,t_size tamanio,const t_byte* conte
 	if(g_mensaje.encabezado.codMsg!=C_PEDIDO_OK){
 		//error
 		log_debug(g_logger,"hubo un error en la escritura en umv\n");
+		printf("eRROR dE ESCRITURA\n");
 		return -1;
 	}
 	free(g_mensaje.flujoDatos);g_mensaje.flujoDatos=NULL;
@@ -460,7 +457,7 @@ void levantarSegmentoEtiquetas(){
 		if(lecturaUMV(g_pcb.indice_etiquetas,0,g_pcb.tamanio_indice_etiquetas)!=0){
 			//error de lectura del segmento de etiquetas
 			log_debug(g_logger,"error al traer todo el segmento de etiquetas de la umv.");
-			printf("error en la lectura del segmento de etiquetas\n");
+			printf("ERROR eN lECTRA dEL sEGMENTo dE eTIQUETAs\n");
 			exit(EXIT_FAILURE);
 		}
 		//colocando el segmento de etiquetas en infoEtiquetas
@@ -471,9 +468,8 @@ void levantarSegmentoEtiquetas(){
 }
 void listarDiccio(){
 	extern t_dictionary *g_diccionario_var;
-
-	printf("imprimiendo el diccionario de variables: nombre_Variable-direccion logica\n");
-	void imprime(char* clave, t_var *vari){printf("clave:%s nombre:%s direccion:%i\n",clave,vari->nombre_var,vari->direccion_var);}
+	printf("dICCIONARIo dE VARIABLES: NOMbRe  DIRECCIoN LOGiCA\n");
+	void imprime(char* clave, t_var *vari){printf("cLAVE:%s NOMbRE:%s DIRECCIoN:%i\n",clave,vari->nombre_var,vari->direccion_var);}
 	dictionary_iterator(g_diccionario_var,(void *)imprime);
 }
 void expulsarProceso(){
@@ -483,7 +479,6 @@ void expulsarProceso(){
 	extern int    g_quantumGastado;
 	extern t_log *g_logger;
 
-	printf("desconectandose\n");
 	g_mensaje.encabezado.codMsg=K_EXPULSADO_DESCONEXION;
 	cargarPcb();
 	enviarMsg(g_socketKernel,g_mensaje);
@@ -493,8 +488,7 @@ void expulsarProceso(){
 	enviarMsg(g_socketUMV,g_mensaje);
 
 	log_debug(g_logger,"Se enviaron mensajes a umv y kernel avisando la desconexion del proceso cpu");
-	printf("enviados mensajes a umv y kernel\n");
-
+	//printf("enviados mensajes a umv y kernel\n");
 	liberarEstructuras();
 	close(g_socketKernel);
 	close(g_socketUMV);
@@ -588,12 +582,13 @@ void *hiloHotPlug(void *sinUso){
 
 	log_debug(g_logger,"hilo hiloHotPlug lanzado");
 	sem_wait(&sem_hotPlug);
+	printf("===------>CpU DeSCoNECTANdoSE<-------===\n");
 	if(g_procesoAceptado){
 		log_debug(g_logger,"se cerrara el proceso CPU con un programa ejecutandose al momento del cierre");
 		g_desconexion=true;
 		cpuInactiva=0;
 	}else{
-		printf("desconectandose\n");
+		//printf("desconectandose\n");
 		log_debug(g_logger,"se cerrara el proceso CPU sin ningun programa ejecutandose al momento del cierre");
 
 		g_mensaje.encabezado.codMsg=K_EXPULSADO_DESCONEXION;
@@ -604,7 +599,7 @@ void *hiloHotPlug(void *sinUso){
 		g_mensaje.encabezado.longitud=0;
 		enviarMsg(g_socketUMV,g_mensaje);
 
-		printf("enviados mensajes a umv y kernel\n");
+		//printf("enviados mensajes a umv y kernel\n");
 		close(g_socketKernel);
 		close(g_socketUMV);
 		cpuInactiva=1;

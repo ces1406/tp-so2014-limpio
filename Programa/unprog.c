@@ -53,25 +53,14 @@ int main (int argc,char *argv[]){
 	}else{
 		printf("archivo encontrado\n");
 		while((c=fgetc(script))!=EOF){
-			//printf("se leyo el char: %c tamanio:%i\n",c,tamanio);
 			tamanio++;
 			data=realloc(data,tamanio);
-			//memcpy(data+tamanio,&c,sizeof(char));
-			//data[tamanio]=c;
-			//printf("data:%s\n",data);
 			data[tamanio-1]=c;
 		}
-		//if(c==EOF)printf("llego al fin del arch\n");
-		//data=malloc(tamanio);
-		//fread(data,tamanio,1,script);
-
 	}
-
 	fclose(script);
 	//-------------------------------------->FIN METODO LARGO<----------------------------------------------
-	printf("tamanio: %i\n",tamanio);
-	printf("data:%s\n",data);
-	//printf("data2:%s\n",data2);
+
 
 	//---------------------------------------->METODO CORTO<-------------------------------------------------
 	/*descriptorArch=open(argv[1],O_RDONLY);
@@ -104,7 +93,6 @@ int main (int argc,char *argv[]){
 	mensaje.encabezado.longitud=0;
 	enviarMsg(socketKernel,mensaje);
 	//log_debug(logger,"Se mando mensaje a kernel con codigo:K_HANDSHAKE...");
-	printf("Conexion y handshake con kernel hecho\n");
 
 	while(1){
 		recibirMsg(socketKernel,&mensaje);
@@ -115,7 +103,6 @@ int main (int argc,char *argv[]){
 			mensaje.encabezado.longitud=tamanio;
 			printf("antes del malloc tamanio %i\n",tamanio);
 			mensaje.flujoDatos=malloc(tamanio);
-			printf("Despues del malloc\n");
 			memcpy(mensaje.flujoDatos,data,tamanio);
 			enviarMsg(socketKernel,mensaje);
 			//CERRANDO EL ARCHIVO
