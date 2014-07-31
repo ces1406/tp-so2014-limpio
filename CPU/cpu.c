@@ -56,7 +56,7 @@ AnSISOP_kernel funciones_kernel={
 };
 
 int main(int argc,char * argv[]){
-	extern int           g_socketUMV;
+	/*extern int           g_socketUMV;
 	extern int           g_socketKernel;
 	extern int           g_puertoUmv;
 	extern int           g_puertoKernel;
@@ -68,6 +68,7 @@ int main(int argc,char * argv[]){
 	extern pthread_t     idHiloHotPlug;
 	extern t_log        *g_logger;
 	extern t_msg         g_mensaje;
+	*/
 	g_mensaje.flujoDatos=NULL;
 	g_quantumGastado=0;
 
@@ -117,11 +118,12 @@ int main(int argc,char * argv[]){
 }
 void leerArchivoConf(char* path){
 	//LEVANTAR IPs Y PUERTOS DE KERNEL Y UMV DEL ARCHIVO DE CONFIGURACION
-	extern char   g_ipKernel[16];
+	/*extern char   g_ipKernel[16];
 	extern char   g_ipUmv[16];
 	extern int    g_puertoKernel;
 	extern int    g_puertoUmv;
 	extern t_log *g_logger;
+	*/
 	char         *ip;
 	t_config     *configCPU;
 
@@ -136,9 +138,9 @@ void leerArchivoConf(char* path){
 	config_destroy(configCPU);
 }
 void handshakeConKernel(){
-	extern int    g_socketKernel;
+	/*extern int    g_socketKernel;
 	extern t_msg  g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	g_mensaje.encabezado.codMsg=K_HANDSHAKE;
 	g_mensaje.encabezado.longitud=0;
@@ -153,13 +155,13 @@ void handshakeConKernel(){
 	liberarMsg();
 }
 void aceptarPcb(){
-	extern int    g_socketKernel;
+	/*extern int    g_socketKernel;
 	extern int    g_quantum;
 	extern int    g_retardo;
 	extern bool   g_procesoAceptado;
 	extern t_pcb  g_pcb;
 	extern t_msg  g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	log_debug(g_logger,"en funcion acpetarPcb esperando recibir de kernel un proceso y su pcb");
 	recibirMsg(g_socketKernel,&g_mensaje);
@@ -203,9 +205,9 @@ void aceptarPcb(){
 	//printf("tamanio_contexto_actual:%i\n",g_pcb.tamanio_contexto_actual);
 }
 void handshakeConUmv(){
-	extern int    g_socketUMV;
+	/*extern int    g_socketUMV;
 	extern t_msg  g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	g_mensaje.encabezado.codMsg=CPU_HANDSHAKE;
 	g_mensaje.encabezado.longitud=0;//serializacion seria mensaje.flujo=cpu pero ya por el mensaje.encabezado.codMsg=U_HANDSHAKE  umv se da cuenta
@@ -222,10 +224,10 @@ void handshakeConUmv(){
 	}
 }
 void avisoUMVprocesoActivo(){
-	extern t_pcb  g_pcb;
+	/*extern t_pcb  g_pcb;
 	extern int    g_socketUMV;
 	extern t_msg  g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	g_mensaje.encabezado.codMsg=U_PROCESO_ACTIVO;
 	g_mensaje.encabezado.longitud=sizeof(uint16_t);
@@ -237,10 +239,10 @@ void avisoUMVprocesoActivo(){
 	liberarMsg();
 }
 void recrearDiccioVars(){
-	extern t_msg          g_mensaje;
+	/*extern t_msg          g_mensaje;
 	extern char          *g_infoDiccioVar;
 	extern t_pcb          g_pcb;
-	extern t_log         *g_logger;
+	extern t_log         *g_logger;*/
 	g_infoDiccioVar=NULL;
 	t_size offset=0,tam;
 
@@ -263,14 +265,14 @@ void recrearDiccioVars(){
 	//g_infoDiccioVar=NULL;---->se hizo en llenarDiccionario()
 }
 void ejecutarProceso(){
-	extern int    g_quantum;
+	/*extern int    g_quantum;
 	extern int    g_quantumGastado;
 	extern int    g_retardo;
 	extern bool   g_expulsar;
 	extern bool   g_desconexion;
 	extern t_pcb  g_pcb;
 	extern t_msg  g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	g_expulsar=false;
 	t_size offset,tamanio;
@@ -330,9 +332,9 @@ void ejecutarProceso(){
 	}
 }
 int lecturaUMV(t_puntero base,t_size offset,t_size tamanio){
-	extern int   g_socketUMV;
+	/*extern int   g_socketUMV;
 	extern t_msg g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 	/*char a;
 	int i;
 	t_byte c;
@@ -390,9 +392,9 @@ int lecturaUMV(t_puntero base,t_size offset,t_size tamanio){
 	return 0;
 }
 int escrituraUMV(t_puntero base,t_size offset,t_size tamanio,const t_byte* contenido){
-	extern int   g_socketUMV;
+	/*extern int   g_socketUMV;
 	extern t_msg g_mensaje;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 	/*t_byte d;
 	int i;
 	t_entero_pack b;*/
@@ -444,11 +446,11 @@ int escrituraUMV(t_puntero base,t_size offset,t_size tamanio,const t_byte* conte
 	return 0;
 }
 void levantarSegmentoEtiquetas(){
-	extern int     g_socketUMV;
+	/*extern int     g_socketUMV;
 	extern t_msg   g_mensaje;
 	extern char   *g_infoEtiquetas;
 	extern t_pcb   g_pcb;
-	extern t_log  *g_logger;
+	extern t_log  *g_logger;*/
 	g_infoEtiquetas=NULL;
 
 	log_debug(g_logger,"Se levantara la info del segmento de etiquetas trayendo directamente todo el cacho de segmento...");
@@ -467,17 +469,17 @@ void levantarSegmentoEtiquetas(){
 	}
 }
 void listarDiccio(){
-	extern t_dictionary *g_diccionario_var;
+	//extern t_dictionary *g_diccionario_var;
 	printf("dICCIONARIo dE VARIABLES: NOMbRe  DIRECCIoN LOGiCA\n");
 	void imprime(char* clave, t_var *vari){printf("cLAVE:%s NOMbRE:%s DIRECCIoN:%i\n",clave,vari->nombre_var,vari->direccion_var);}
 	dictionary_iterator(g_diccionario_var,(void *)imprime);
 }
 void expulsarProceso(){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketUMV;
 	extern int    g_socketKernel;
 	extern int    g_quantumGastado;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	g_mensaje.encabezado.codMsg=K_EXPULSADO_DESCONEXION;
 	cargarPcb();
@@ -496,10 +498,10 @@ void expulsarProceso(){
 	exit(EXIT_SUCCESS);
 }
 void llenarDiccionario(){
-	extern char          *g_infoDiccioVar;
+	/*extern char          *g_infoDiccioVar;
 	extern t_dictionary  *g_diccionario_var;
 	extern t_pcb          g_pcb;
-	extern t_log         *g_logger;
+	extern t_log         *g_logger;*/
 	int                   i,offset;
 	char                  nombre;
 
@@ -516,12 +518,12 @@ void llenarDiccionario(){
 	g_infoDiccioVar=NULL;
 }
 void liberarEstructuras (){
-	extern t_dictionary *g_diccionario_var;
+	/*extern t_dictionary *g_diccionario_var;
 	extern char *g_infoEtiquetas;
 	extern char *g_infoDiccioVar;
 	extern t_msg g_mensaje;
 	extern bool  g_procesoAceptado;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	log_debug(g_logger,"Se liberaran todas las estructuras usadas en el proceso cpu");
 	if(g_infoEtiquetas!=NULL){
@@ -541,9 +543,9 @@ void liberarEstructuras (){
 	g_procesoAceptado=false;//aca???
 }
 void desconectarse(){
-	extern sem_t     sem_hotPlug;
+	/*extern sem_t     sem_hotPlug;
 	extern t_log    *g_logger;
-	extern pthread_t idHiloHotPlug;
+	extern pthread_t idHiloHotPlug;*/
 	int cpuInactiva=0;
 
 	log_debug(g_logger,"Se recibio la senial SIGUSR1 y se desconectara el proceso CPU");
@@ -555,8 +557,8 @@ void desconectarse(){
 	}
 }
 void cargarPcb(){
-	extern t_msg g_mensaje;
-	extern t_pcb g_pcb;
+	/*extern t_msg g_mensaje;
+	extern t_pcb g_pcb;*/
 
 	g_mensaje.encabezado.longitud=sizeof(t_pcb);
 	g_mensaje.flujoDatos=malloc(g_mensaje.encabezado.longitud);
@@ -571,13 +573,13 @@ void cargarPcb(){
 	memcpy(g_mensaje.flujoDatos+2*sizeof(uint16_t)+6*sizeof(u_int32_t),               &g_pcb.tamanio_indice_etiquetas,         sizeof(u_int32_t));
 }
 void *hiloHotPlug(void *sinUso){
-	extern t_msg   g_mensaje;
+	/*extern t_msg   g_mensaje;
 	extern int     g_socketKernel;
 	extern int     g_socketUMV;
 	extern sem_t   sem_hotPlug;
 	extern bool    g_desconexion;
 	extern bool    g_procesoAceptado;
-	extern t_log  *g_logger;
+	extern t_log  *g_logger;*/
 	int            cpuInactiva;
 
 	log_debug(g_logger,"hilo hiloHotPlug lanzado");
@@ -620,7 +622,7 @@ t_log *crearLog(char *archivo){
 }
 
 void liberarMsg(){
-	extern t_msg g_mensaje;
+	//extern t_msg g_mensaje;
 	free(g_mensaje.flujoDatos);
 	g_mensaje.flujoDatos=NULL;
 }

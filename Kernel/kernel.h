@@ -54,8 +54,8 @@ typedef struct{
 }t_varCompartida;
 
 //static void destruirElementoColaBloq(t_bloqueadoIO *nodoBloq);
-static void liberarElementoDiccioIO(t_hiloIO * hiloIO);
-static void liberarElementoDiccioSem(t_semaforo *semaforo);
+//static void liberarElementoDiccioIO(t_hiloIO * hiloIO);
+//static void liberarElementoDiccioSem(t_semaforo *semaforo);
 static void destruirNodoProceso(t_nodo_proceso *proceso);
 static void destruirVarCompartida(t_varCompartida *varComp);
 void liberarRecursos();

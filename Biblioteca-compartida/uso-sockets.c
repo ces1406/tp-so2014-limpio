@@ -54,7 +54,7 @@ void enviarMsg(int unSocket,t_msg msgEnviado){
 	memcpy(flujo,&msgEnviado.encabezado,sizeof(t_encabezado));
 	memcpy(&flujo[sizeof(t_encabezado)],msgEnviado.flujoDatos,msgEnviado.encabezado.longitud);
 	while(bytesTotales<bytesPendientes){
-		n=send(unSocket,flujo,msgEnviado.encabezado.longitud+sizeof(msgEnviado.encabezado),0);//bytesPendientes,0);
+		n=send(unSocket,flujo,msgEnviado.encabezado.longitud+sizeof(msgEnviado.encabezado),MSG_NOSIGNAL);//bytesPendientes,0);
 		if(n<0){
 			//ERROR
 			printf("error en la funcion send()\n");

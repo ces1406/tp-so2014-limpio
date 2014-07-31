@@ -8,11 +8,23 @@
 #include "cpu_primitivas.h"
 
 
+extern bool           g_desconexion;
+extern t_dictionary  *g_diccionario_var;
+extern bool           g_expulsar;
+extern char          *g_infoEtiquetas;
+extern t_log         *g_logger;
+extern t_msg          g_mensaje;
+extern t_pcb          g_pcb;
+extern int            g_quantum;
+extern int            g_quantumGastado;
+extern int            g_socketKernel;
+
+
 t_puntero primitiva_definirVariable(t_nombre_variable variable){
-	extern t_dictionary  *g_diccionario_var;
+/*	extern t_dictionary  *g_diccionario_var;
 	extern t_pcb          g_pcb;
 	extern t_log         *g_logger;
-	extern bool           g_expulsar;
+	extern bool           g_expulsar;*/
 	t_puntero dirRetornada=-1;           //---->indica ERROR ???
 if(!g_expulsar){
 	t_size tamanio    =sizeof(t_nombre_variable);
@@ -39,8 +51,8 @@ if(!g_expulsar){
 	return dirRetornada;
 }
 t_puntero primitiva_obtenerPosicionVariable(t_nombre_variable variable){
-	extern t_dictionary *g_diccionario_var;
-	extern t_log        *g_logger;
+	/*extern t_dictionary *g_diccionario_var;
+	extern t_log        *g_logger;*/
 	t_puntero            ptr;
 	extern bool          g_expulsar;
 
@@ -58,10 +70,10 @@ if(!g_expulsar){
 	return ptr;
 }
 t_valor_variable primitiva_dereferenciar (t_puntero ptr_variable){
-	extern t_pcb     g_pcb;
+	/*extern t_pcb     g_pcb;
 	extern t_msg     g_mensaje;
 	extern t_log    *g_logger;
-	extern bool      g_expulsar;
+	extern bool      g_expulsar;*/
 	t_valor_variable variable;
 	u_int32_t var;
 
@@ -85,9 +97,9 @@ if(!g_expulsar){
 	return variable;
 }
 void primitiva_asignar(t_puntero ptr_variable, t_valor_variable variable){
-	extern t_pcb  g_pcb;
+	/*extern t_pcb  g_pcb;
 	extern t_log *g_logger;
-	extern bool   g_expulsar;
+	extern bool   g_expulsar;*/
 
 if(!g_expulsar){
 	printf(":::primitiva--->asIgnar:::\n");
@@ -101,7 +113,7 @@ if(!g_expulsar){
 }
 }
 void primitiva_finalizar(void){
-	extern t_pcb         g_pcb;
+	/*extern t_pcb         g_pcb;
 	extern t_msg         g_mensaje;
 	extern t_dictionary *g_diccionario_var;
 	extern int           g_socketKernel;
@@ -109,7 +121,7 @@ void primitiva_finalizar(void){
 	extern int           g_quantumGastado;
 	extern bool          g_expulsar;
 	extern bool          g_desconexion;
-	extern t_log        *g_logger;
+	extern t_log        *g_logger;*/
 
 if(!g_expulsar){
 	//si segmento_pila=cursor_de_pila =>es el fin del programa
@@ -162,10 +174,10 @@ if(!g_expulsar){
 }
 }
 void primitiva_irAlLabel(t_nombre_etiqueta nombreEtiqueta){
-	extern char          *g_infoEtiquetas;
+	/*extern char          *g_infoEtiquetas;
 	extern t_pcb          g_pcb;
 	extern t_log         *g_logger;
-	extern bool           g_expulsar;
+	extern bool           g_expulsar;*/
 	t_puntero_instruccion siguienteInstruc;
 
 if(!g_expulsar){
@@ -184,10 +196,10 @@ if(!g_expulsar){
 }
 }
 void primitiva_llamarSinRetorno(t_nombre_etiqueta etiqueta){
-	extern t_pcb          g_pcb;
+	/*extern t_pcb          g_pcb;
 	extern t_dictionary  *g_diccionario_var;
 	extern t_log         *g_logger;
-	extern bool           g_expulsar;
+	extern bool           g_expulsar;*/
 	t_size                offset=0;
 	uint16_t              pcAnterior=g_pcb.program_counter;
 
@@ -224,9 +236,9 @@ if(!g_expulsar){
 }
 }
 void primitiva_llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar){
-	extern t_pcb          g_pcb;
+	/*extern t_pcb          g_pcb;
 	extern t_log         *g_logger;
-	extern bool           g_expulsar;
+	extern bool           g_expulsar;*/
 	int                   offset;
 
 if(!g_expulsar){
@@ -247,11 +259,11 @@ if(!g_expulsar){
 }
 }
 void primitiva_imprimir(t_valor_variable valor){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern t_pcb  g_pcb;
 	extern t_log *g_logger;
-	extern bool   g_expulsar;
+	extern bool   g_expulsar;*/
 
 if(!g_expulsar){
 	log_debug(g_logger,":::primitiva_imprimir:::  VALOR: %i",(int)valor);
@@ -270,9 +282,9 @@ if(!g_expulsar){
 }
 }
 void primitiva_retornar(t_valor_variable retorno){
-	extern t_pcb         g_pcb;
+	/*extern t_pcb         g_pcb;
 	extern t_msg         g_mensaje;
-	extern t_log        *g_logger;
+	extern t_log        *g_logger;*/
 	t_puntero            dirRetorno;
 
 	printf(":::primitiva--->REToRNAR:::\n");
@@ -320,10 +332,10 @@ void liberarElementoDiccio(t_var* elemento){
 	//--->Borrar despues, es solo para probar 1 programa
 }*/
 void primitiva_imprimirTexto(char* texto){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern t_pcb  g_pcb;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 
 	printf(":::primitiva--->imprimirTexto:::\n");
 	log_debug(g_logger,":::primitiva_imprimirTexto:::\n  texto:%s",texto);
@@ -337,13 +349,13 @@ void primitiva_imprimirTexto(char* texto){
 	liberarMsg();
 }
 t_valor_variable primitiva_obtenerValorCompartida(t_nombre_compartida variable){
-	extern t_msg     g_mensaje;
+	/*extern t_msg     g_mensaje;
 	extern int       g_socketKernel;
 	extern t_log    *g_logger;
 	extern bool      g_expulsar;
 	extern int       g_quantumGastado;
 	extern int       g_quantum;
-	extern t_pcb     g_pcb;
+	extern t_pcb     g_pcb;*/
 	t_valor_variable varCompartida;
 
 if(!g_expulsar){
@@ -376,13 +388,13 @@ if(!g_expulsar){
 	return varCompartida;
 }
 t_valor_variable primitiva_asignarValorCompartida(t_nombre_compartida variable, t_valor_variable valor){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern t_log *g_logger;
 	extern bool   g_expulsar;
 	extern int    g_quantumGastado;
 	extern int    g_quantum;
-	extern t_pcb  g_pcb;
+	extern t_pcb  g_pcb;*/
 	//t_valor_variable valorAsignado;
 
 if(!g_expulsar){
@@ -415,12 +427,12 @@ if(!g_expulsar){
 	return valor;
 }
 void primitiva_entradaSalida(t_nombre_dispositivo dispositivo, int tiempo){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern int    g_quantum;
 	extern int    g_quantumGastado;
 	extern bool   g_expulsar;
-	extern t_log *g_logger;
+	extern t_log *g_logger;*/
 	//char* contenidoPcb=NULL;
 
 	log_debug(g_logger,":::primitiva_entradaSalida:::");
@@ -444,13 +456,13 @@ void primitiva_entradaSalida(t_nombre_dispositivo dispositivo, int tiempo){
 	g_expulsar=true;
 }
 void primitiva_signal(t_nombre_semaforo id_semaforo){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern t_log *g_logger;
 	extern int    g_quantumGastado;
 	extern int    g_quantum;
 	extern bool   g_expulsar;
-	extern t_pcb  g_pcb;
+	extern t_pcb  g_pcb;*/
 
 	log_debug(g_logger,":::primitiva--->signal:::");
 	printf(":::primitiva_signal:::\n");
@@ -475,13 +487,13 @@ void primitiva_signal(t_nombre_semaforo id_semaforo){
 	}
 }
 void primitiva_wait(t_nombre_semaforo id_semaforo){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern bool   g_expulsar;
 	extern int    g_quantum;
 	extern int    g_quantumGastado;
 	extern t_log *g_logger;
-	extern t_pcb  g_pcb;
+	extern t_pcb  g_pcb;*/
 
 	log_debug(g_logger,":::primitiva_wait:::");
 	printf(":::primitiva--->wait:::\n");
@@ -517,11 +529,11 @@ void primitiva_wait(t_nombre_semaforo id_semaforo){
 	}
 }
 void falloMemoria(){
-	extern t_msg  g_mensaje;
+	/*extern t_msg  g_mensaje;
 	extern int    g_socketKernel;
 	extern int    g_quantumGastado;
 	extern int    g_quantum;
-	extern bool   g_expulsar;
+	extern bool   g_expulsar;*/
 
 	g_expulsar=true;
 	g_mensaje.encabezado.codMsg=K_EXPULSADO_SEG_FAULT;

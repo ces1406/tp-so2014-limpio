@@ -87,57 +87,69 @@ int main (int argc,char *argv[]){
 	socketKernel=crearSocket();
 	conectarseCon(ipKernel,puertoKernel,socketKernel);
 	//log_debug(logger,"Se conectara con kernel...");
+	printf("se hizo la conexion\n");
 
 	//HACIENDO HANDSHAKE CON KERNEL
 	mensaje.encabezado.codMsg=K_HANDSHAKE;
 	mensaje.encabezado.longitud=0;
 	enviarMsg(socketKernel,mensaje);
+	printf("handshake mandado\n");
+	free(mensaje.flujoDatos);mensaje.flujoDatos=NULL;
 	//log_debug(logger,"Se mando mensaje a kernel con codigo:K_HANDSHAKE...");
 
 	while(1){
+		printf("entrando al while esperando mensaje...\n");
 		recibirMsg(socketKernel,&mensaje);
+		printf("llego mensaje\n");
 
 		if(mensaje.encabezado.codMsg==P_ENVIAR_SCRIPT){
+			printf("se recibio enviar-script\n");
 			//log_debug(logger,"Se recibio un mensaje de kernel con el codigo: P_ENVIAR_SCRIPT y se enviara el script...");
 			mensaje.encabezado.codMsg=K_ENVIO_SCRIPT;
 			mensaje.encabezado.longitud=tamanio;
-			printf("antes del malloc tamanio %i\n",tamanio);
+			printf("tamanio del script%i\n",tamanio);
 			mensaje.flujoDatos=malloc(tamanio);
 			memcpy(mensaje.flujoDatos,data,tamanio);
 			enviarMsg(socketKernel,mensaje);
-			//CERRANDO EL ARCHIVO
-			//close(descriptorArch);
-			}
+		}
 		if(mensaje.encabezado.codMsg==P_IMPRIMIR_VAR){
 			//log_debug(logger,"Se recicibio un mensaje de kernel con el valor a imprimir de una variable");
 			printf("********************************************\n");
 			printf("-------------RESULTADO: %i\n",(int)*(mensaje.flujoDatos));
 			printf("********************************************\n");
+			free(mensaje.flujoDatos);mensaje.flujoDatos=NULL;
 		}
 		if(mensaje.encabezado.codMsg==P_IMPRIMIR_TXT){
 			//log_debug(logger,"Se recibio un mensaje de kernel con un texto a imprimir");
 			printf("********************************************\n");
 			printf("-------------TEXTO: %s\n",mensaje.flujoDatos);
 			printf("********************************************\n");
+			free(mensaje.flujoDatos);mensaje.flujoDatos=NULL;
 		}
 		if(mensaje.encabezado.codMsg==P_DESCONEXION){
 			//log_debug(logger,"Se recibio un mensaje de kernel para desconectarse, el programa finalizo, chauuu...");
 			printf("FINALIZO EL PROGRAMA..\n");
-			sleep(2);//-------------------------->sleep porque sino apenas cierra el socket manda basura -el kernel recibe basura
-			close(socketKernel);
+			//sleep(2);//-------------------------->sleep porque sino apenas cierra el socket manda basura -el kernel recibe basura
+			//seguir=false;
+			free(mensaje.flujoDatos);mensaje.flujoDatos=NULL;
 			break;
 		}
 		if(mensaje.encabezado.codMsg==P_SERVICIO_DENEGADO){
 			//log_debug(logger,"Se recibio un mensaje de kernel para desconectarse, el programa tiene errores de manejo de memoria, chauuu...");
 			printf("SERVICIO DENEGADO (memory overload)...\n");
-			sleep(2);
-			close(socketKernel);
+			//seguir=false;
+			free(mensaje.flujoDatos);mensaje.flujoDatos=NULL;
 			break;
 		}
 	}
+	/*recibirMsg(socketKernel,&mensaje);
+	if(mensaje.encabezado.codMsg==P_DESCONEXION){
+		printf("desconexion definitiva\n");
+	}/*/
+	//sleep(4);
+	//close(socketKernel);
 
-	free(data);
-	free(mensaje.flujoDatos);
+	//free(mensaje.flujoDatos);
 	return EXIT_SUCCESS;
 }
 /*
