@@ -56,19 +56,7 @@ AnSISOP_kernel funciones_kernel={
 };
 
 int main(int argc,char * argv[]){
-	/*extern int           g_socketUMV;
-	extern int           g_socketKernel;
-	extern int           g_puertoUmv;
-	extern int           g_puertoKernel;
-	extern int           g_quantumGastado;
-	extern char          g_ipKernel[16];
-	extern char          g_ipUmv[16];
-	extern t_dictionary *g_diccionario_var;
-	extern sem_t         sem_hotPlug;
-	extern pthread_t     idHiloHotPlug;
-	extern t_log        *g_logger;
-	extern t_msg         g_mensaje;
-	*/
+
 	g_mensaje.flujoDatos=NULL;
 	g_quantumGastado=0;
 
@@ -117,13 +105,6 @@ int main(int argc,char * argv[]){
 	return 0;
 }
 void leerArchivoConf(char* path){
-	//LEVANTAR IPs Y PUERTOS DE KERNEL Y UMV DEL ARCHIVO DE CONFIGURACION
-	/*extern char   g_ipKernel[16];
-	extern char   g_ipUmv[16];
-	extern int    g_puertoKernel;
-	extern int    g_puertoUmv;
-	extern t_log *g_logger;
-	*/
 	char         *ip;
 	t_config     *configCPU;
 
@@ -138,10 +119,6 @@ void leerArchivoConf(char* path){
 	config_destroy(configCPU);
 }
 void handshakeConKernel(){
-	/*extern int    g_socketKernel;
-	extern t_msg  g_mensaje;
-	extern t_log *g_logger;*/
-
 	g_mensaje.encabezado.codMsg=K_HANDSHAKE;
 	g_mensaje.encabezado.longitud=0;
 	enviarMsg(g_socketKernel,g_mensaje);
@@ -155,14 +132,6 @@ void handshakeConKernel(){
 	liberarMsg();
 }
 void aceptarPcb(){
-	/*extern int    g_socketKernel;
-	extern int    g_quantum;
-	extern int    g_retardo;
-	extern bool   g_procesoAceptado;
-	extern t_pcb  g_pcb;
-	extern t_msg  g_mensaje;
-	extern t_log *g_logger;*/
-
 	log_debug(g_logger,"en funcion acpetarPcb esperando recibir de kernel un proceso y su pcb");
 	recibirMsg(g_socketKernel,&g_mensaje);
 	g_procesoAceptado=true;
@@ -205,10 +174,6 @@ void aceptarPcb(){
 	//printf("tamanio_contexto_actual:%i\n",g_pcb.tamanio_contexto_actual);
 }
 void handshakeConUmv(){
-	/*extern int    g_socketUMV;
-	extern t_msg  g_mensaje;
-	extern t_log *g_logger;*/
-
 	g_mensaje.encabezado.codMsg=CPU_HANDSHAKE;
 	g_mensaje.encabezado.longitud=0;//serializacion seria mensaje.flujo=cpu pero ya por el mensaje.encabezado.codMsg=U_HANDSHAKE  umv se da cuenta
 	g_mensaje.flujoDatos=0;
@@ -224,11 +189,6 @@ void handshakeConUmv(){
 	}
 }
 void avisoUMVprocesoActivo(){
-	/*extern t_pcb  g_pcb;
-	extern int    g_socketUMV;
-	extern t_msg  g_mensaje;
-	extern t_log *g_logger;*/
-
 	g_mensaje.encabezado.codMsg=U_PROCESO_ACTIVO;
 	g_mensaje.encabezado.longitud=sizeof(uint16_t);
 	g_mensaje.flujoDatos=realloc(g_mensaje.flujoDatos,sizeof(uint16_t));
@@ -239,10 +199,6 @@ void avisoUMVprocesoActivo(){
 	liberarMsg();
 }
 void recrearDiccioVars(){
-	/*extern t_msg          g_mensaje;
-	extern char          *g_infoDiccioVar;
-	extern t_pcb          g_pcb;
-	extern t_log         *g_logger;*/
 	g_infoDiccioVar=NULL;
 	t_size offset=0,tam;
 
@@ -265,15 +221,6 @@ void recrearDiccioVars(){
 	//g_infoDiccioVar=NULL;---->se hizo en llenarDiccionario()
 }
 void ejecutarProceso(){
-	/*extern int    g_quantum;
-	extern int    g_quantumGastado;
-	extern int    g_retardo;
-	extern bool   g_expulsar;
-	extern bool   g_desconexion;
-	extern t_pcb  g_pcb;
-	extern t_msg  g_mensaje;
-	extern t_log *g_logger;*/
-
 	g_expulsar=false;
 	t_size offset,tamanio;
 	char *lineaCodigo=NULL;
@@ -332,9 +279,6 @@ void ejecutarProceso(){
 	}
 }
 int lecturaUMV(t_puntero base,t_size offset,t_size tamanio){
-	/*extern int   g_socketUMV;
-	extern t_msg g_mensaje;
-	extern t_log *g_logger;*/
 	/*char a;
 	int i;
 	t_byte c;

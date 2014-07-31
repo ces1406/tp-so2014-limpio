@@ -74,7 +74,7 @@ void *hiloIO(void *sinUso);
 void *hiloTerminarProcesos(void *sinUso);
 
 void levantarArchivoConf(char*);
-void atenderNuevaConexion(int,void(*funcionQueAtiende)(int),int*);//atiende las nuevas conexiones:socket,cantConexiones,el ufds,funcion que atiende la nueva conexion
+void atenderNuevaConexion(int,void(*funcionQueAtiende)(int),int*,fd_set *);//atiende las nuevas conexiones:socket,cantConexiones,el ufds,funcion que atiende la nueva conexion
 void atenderPrograma(int);//---->funcion para ser pasada como argumento
 void atenderCPU(int);
 uint16_t asignarID(t_pcb*);
@@ -104,7 +104,7 @@ static void destruirNodoSemaforo(t_semaforo *semaforo);
 
 int main(int argc,char** argv){
 	int  socketEscuchaPLP,socketMayor;
-	int i,rv;
+	int i;
 
 	g_logger=crearLog(argv[0]);
 	gs_mensajeUMV.flujoDatos=NULL;
@@ -128,6 +128,11 @@ int main(int argc,char** argv){
 
 	//CREAR ESTRUCTURAS
 	crearEstructuras();
+
+	FD_ZERO(&g_fds_lecturaProg);
+	FD_ZERO(&g_fds_lecturaCpu);
+	FD_ZERO(&g_fds_maestroProg);
+	FD_ZERO(&g_fds_maestroCpu);
 
 	//LANZANDO HILO PCP
 	pthread_create(&idHiloPCP,NULL,(void*)&hiloPCP,NULL);
@@ -160,12 +165,16 @@ int main(int argc,char** argv){
 	printf("main()==>hiloPLP=>socketEscuchaPLP socketEscucha:%i g_socketsAbiertos:%i\n",socketEscuchaPLP,g_socketsAbiertosProg);
 	//MAIN HILO PLP
 	while(1){
+		printf("en while PLP...\n");
+		sleep(1);
+		FD_ZERO(&g_fds_lecturaProg);
 		g_fds_lecturaProg=g_fds_maestroProg;
 		if(select(socketMayor+1,&g_fds_lecturaProg,NULL,NULL,NULL)==-1){
 			printf("ERROR:error en select()\n");
 			return EXIT_FAILURE;
 		}
 		if(FD_ISSET(g_socketsProg[0],&g_fds_lecturaProg)){
+			printf("nueva conexion de un programa\n");
 			//un nuevo programa quiere conexion
 			g_socketsAbiertosProg++;
 			atenderNuevaConexion(socketEscuchaPLP,(void*)atenderPrograma,&socketMayor,&g_fds_maestroProg);
@@ -173,6 +182,7 @@ int main(int argc,char** argv){
 		//chequando pedidos de programas ya conectados
 		for(i=1;i<g_socketsAbiertosProg;i++){
 			if(FD_ISSET(g_socketsProg[i],&g_fds_lecturaProg)){
+				printf("actividad en el g_socketsProg[ %i ]\n",i);
 				atenderPrograma(g_socketsProg[i]);
 			}
 		}
@@ -657,9 +667,10 @@ void levantarArchivoConf(char *path){
 	printf("***se levanto el archivo de configuracion*****\n");
 }
 void atenderNuevaConexion(int sockEscucha,void (*funcionQueAtiende)(int),int* mayorSock,fd_set *p_fds_maestro){
-	int socketNuevo,i;
+	int socketNuevo;
 
 	socketNuevo=aceptarConexion(sockEscucha);
+
 	FD_SET(socketNuevo,p_fds_maestro);
 	g_socketsProg[g_socketsAbiertosProg-1]=socketNuevo;
 	if(socketNuevo>*mayorSock) *mayorSock=socketNuevo;
@@ -1071,7 +1082,7 @@ static void destruirNodoSemaforo(t_semaforo *semaforo){
 
 void *hiloPCP(void *sinUso){
 	printf("***********hiloPCP lanzado*********\n");
-	int i,rv,socketEscuchaPCP,socketMayor;
+	int i,socketEscuchaPCP,socketMayor;
 
 	log_debug(g_logger,"hiloPCP()==>Hilo hiloPCP lanzado...");
 
@@ -1088,13 +1099,15 @@ void *hiloPCP(void *sinUso){
 
 	//MAIN HILO PCP
 	while(1){
+		printf("en while pcp...\n");
+		FD_ZERO(&g_fds_lecturaCpu);
 		g_fds_lecturaCpu=g_fds_maestroCpu;
 		if(select(socketMayor+1,&g_fds_lecturaCpu,NULL,NULL,NULL)==-1){
 			printf("ERROR:error en select()\n");
-			return EXIT_FAILURE;
 		}
 		if(FD_ISSET(g_socketsCpu[0],&g_fds_lecturaCpu)){
 			//un nuevo programa quiere conexion
+			printf("actividad en el g_socketsCpu[0]\n");
 			g_socketsCpuAbiertos++;
 			atenderNuevaConexion(socketEscuchaPCP,(void*)atenderCPU,&socketMayor,&g_fds_maestroCpu);
 		}
@@ -1280,7 +1293,6 @@ void *hiloIO(void *parametros){
 	}
 	return NULL;
 }
-
 void *hiloSemaforos(void *sinUso){
 	printf("***********hiloSemaforos lanzado*********** \n");
 	int i;
