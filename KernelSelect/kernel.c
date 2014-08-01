@@ -57,13 +57,12 @@ pthread_t idHiloSemaforo;
 pthread_t idHiloTerminarProcesos;
 //estructuras para select()
 fd_set g_fds_lecturaProg,g_fds_lecturaCpu;
-fd_set g_fds_maestroProg,g_fds_maestroCpu;
 
 //log-socket-mensaje
-t_log          *g_logger;
-int   g_socketUMV;
-t_msg gs_mensajeUMV;
-uint16_t g_ids=0;
+t_log    *g_logger;
+int       g_socketUMV;
+t_msg     gs_mensajeUMV;
+uint16_t  g_ids=0;
 
 //HILOS
 void *hiloPCP(void*);
@@ -74,7 +73,7 @@ void *hiloIO(void *sinUso);
 void *hiloTerminarProcesos(void *sinUso);
 
 void levantarArchivoConf(char*);
-void atenderNuevaConexion(int,void(*funcionQueAtiende)(int),int*,fd_set *);//atiende las nuevas conexiones:socket,cantConexiones,el ufds,funcion que atiende la nueva conexion
+void atenderNuevaConexion(int,void(*funcionQueAtiende)(int),int*,int,int*);//atiende las nuevas conexiones:socket,cantConexiones,el ufds,funcion que atiende la nueva conexion
 void atenderPrograma(int);//---->funcion para ser pasada como argumento
 void atenderCPU(int);
 uint16_t asignarID(t_pcb*);
@@ -129,11 +128,6 @@ int main(int argc,char** argv){
 	//CREAR ESTRUCTURAS
 	crearEstructuras();
 
-	FD_ZERO(&g_fds_lecturaProg);
-	FD_ZERO(&g_fds_lecturaCpu);
-	FD_ZERO(&g_fds_maestroProg);
-	FD_ZERO(&g_fds_maestroCpu);
-
 	//LANZANDO HILO PCP
 	pthread_create(&idHiloPCP,NULL,(void*)&hiloPCP,NULL);
 	//LANZANDO HILO DE MANEJO DE LISTAS
@@ -157,7 +151,9 @@ int main(int argc,char** argv){
 	escucharSocket(socketEscuchaPLP);
 
 	//SELECT
-	FD_SET(socketEscuchaPLP,&g_fds_maestroProg);
+	//FD_SET(socketEscuchaPLP,&g_fds_maestroProg);
+	FD_ZERO(&g_fds_lecturaProg);
+	FD_SET(socketEscuchaPLP,&g_fds_lecturaProg);
 	socketMayor=socketEscuchaPLP;
 	g_socketsProg[0]=socketEscuchaPLP;
 	g_socketsAbiertosProg=1;
@@ -165,10 +161,14 @@ int main(int argc,char** argv){
 	printf("main()==>hiloPLP=>socketEscuchaPLP socketEscucha:%i g_socketsAbiertos:%i\n",socketEscuchaPLP,g_socketsAbiertosProg);
 	//MAIN HILO PLP
 	while(1){
-		printf("en while PLP...\n");
+		printf("en while PLP con socketMayor:%i...\n",socketMayor);
 		sleep(1);
-		FD_ZERO(&g_fds_lecturaProg);
-		g_fds_lecturaProg=g_fds_maestroProg;
+
+		for (i=1;i<g_socketsAbiertosProg;i++){
+			FD_SET(g_socketsProg[i],&g_fds_lecturaProg);
+			printf("puso en el conjunto g_fds_lecturaProg al socket %i\n",g_socketsProg[i]);
+		}
+
 		if(select(socketMayor+1,&g_fds_lecturaProg,NULL,NULL,NULL)==-1){
 			printf("ERROR:error en select()\n");
 			return EXIT_FAILURE;
@@ -177,7 +177,7 @@ int main(int argc,char** argv){
 			printf("nueva conexion de un programa\n");
 			//un nuevo programa quiere conexion
 			g_socketsAbiertosProg++;
-			atenderNuevaConexion(socketEscuchaPLP,(void*)atenderPrograma,&socketMayor,&g_fds_maestroProg);
+			atenderNuevaConexion(socketEscuchaPLP,(void*)atenderPrograma,&socketMayor,g_socketsAbiertosProg,g_socketsProg);
 		}
 		//chequando pedidos de programas ya conectados
 		for(i=1;i<g_socketsAbiertosProg;i++){
@@ -186,6 +186,8 @@ int main(int argc,char** argv){
 				atenderPrograma(g_socketsProg[i]);
 			}
 		}
+		FD_ZERO(&g_fds_lecturaProg);
+		FD_SET(socketEscuchaPLP,&g_fds_lecturaProg);
 	}
 return EXIT_SUCCESS;
 }
@@ -518,7 +520,7 @@ void atenderCPU(int p_sockCPU){
 				printf("elemento:%i socket:%i\n",i,g_socketsCpu[i]);
 			}
 		//sacando el socket del conjunto de lectura
-		FD_CLR(p_sockCPU,&g_fds_maestroCpu);
+		//FD_CLR(p_sockCPU,&g_fds_maestroCpu);----------->deprecado
 		//cerrando la conexion
 		close(p_sockCPU);
 	break;
@@ -632,6 +634,7 @@ void atenderCPU(int p_sockCPU){
 		mensajeCPU.encabezado.codMsg=VALOR_COMPARTIDA_OK;
 		mensajeCPU.encabezado.longitud=0;
 		enviarMsg(p_sockCPU,mensajeCPU);
+		printf("se envio el mensaje de valorcompartida ok por el socket: %i\n",p_sockCPU);
 		liberarMsg(&mensajeCPU);
 
 		varBuscada->valor=valorCompar;
@@ -666,13 +669,12 @@ void levantarArchivoConf(char *path){
 	log_debug(g_logger,"levantarArchivoConf()==>Se levanto el archivo de configuracion...")	;
 	printf("***se levanto el archivo de configuracion*****\n");
 }
-void atenderNuevaConexion(int sockEscucha,void (*funcionQueAtiende)(int),int* mayorSock,fd_set *p_fds_maestro){
+void atenderNuevaConexion(int sockEscucha,void (*funcionQueAtiende)(int),int* mayorSock,int socketsAbiertos,int* g_sockets){
 	int socketNuevo;
 
 	socketNuevo=aceptarConexion(sockEscucha);
-
-	FD_SET(socketNuevo,p_fds_maestro);
-	g_socketsProg[g_socketsAbiertosProg-1]=socketNuevo;
+	//FD_SET(socketNuevo,p_fds_maestro);------>deprecado
+	g_sockets[socketsAbiertos-1]=socketNuevo;
 	if(socketNuevo>*mayorSock) *mayorSock=socketNuevo;
 	printf("en atenderNuevaConexion con socketEscucha:%i socketNuevo:%i socketMayor(ahora):%i\n",sockEscucha,socketNuevo,*mayorSock);
 	funcionQueAtiende(socketNuevo);//derivo a 1 funcion que sigue atendiendo a la conexion -tanto para cpus como para programas- por viene como parametro
@@ -743,7 +745,7 @@ void atenderPrograma(int p_sockPrograma){
 					printf("elemento:%i socket:%i\n",i,g_socketsProg[i]);
 				}
 			//sacando el socket del conjunto de lectura
-			FD_CLR(p_sockPrograma,&g_fds_maestroProg);
+			//FD_CLR(p_sockPrograma,&g_fds_maestroProg);--------->deprecado
 			//cerrando la conexion
 			close(p_sockPrograma);
 
@@ -1092,16 +1094,22 @@ void *hiloPCP(void *sinUso){
 	escucharSocket(socketEscuchaPCP);
 
 	//SELECT
-	FD_SET(socketEscuchaPCP,&g_fds_maestroCpu);
+	FD_ZERO(&g_fds_lecturaCpu);
+	FD_SET(socketEscuchaPCP,&g_fds_lecturaCpu);
 	socketMayor=socketEscuchaPCP;
 	g_socketsCpu[0]=socketEscuchaPCP;
 	g_socketsCpuAbiertos=1;
 
 	//MAIN HILO PCP
 	while(1){
-		printf("en while pcp...\n");
-		FD_ZERO(&g_fds_lecturaCpu);
-		g_fds_lecturaCpu=g_fds_maestroCpu;
+		printf("en while pcp con socketMayor: %i...\n",socketMayor);
+		sleep(1);
+
+		//g_fds_lecturaCpu=g_fds_maestroCpu;------------->no resulta
+		for(i=1;i<g_socketsCpuAbiertos;i++){
+			FD_SET(g_socketsCpu[i],&g_fds_lecturaCpu);
+			printf("puso en el conjunto g_fds_lecturaCpu al socket %i\n",g_socketsCpu[i]);
+		}
 		if(select(socketMayor+1,&g_fds_lecturaCpu,NULL,NULL,NULL)==-1){
 			printf("ERROR:error en select()\n");
 		}
@@ -1109,7 +1117,7 @@ void *hiloPCP(void *sinUso){
 			//un nuevo programa quiere conexion
 			printf("actividad en el g_socketsCpu[0]\n");
 			g_socketsCpuAbiertos++;
-			atenderNuevaConexion(socketEscuchaPCP,(void*)atenderCPU,&socketMayor,&g_fds_maestroCpu);
+			atenderNuevaConexion(socketEscuchaPCP,(void*)atenderCPU,&socketMayor,g_socketsCpuAbiertos,g_socketsCpu);
 		}
 		//chequando pedidos de programas ya conectados
 		for(i=1;i<g_socketsCpuAbiertos;i++){
@@ -1117,6 +1125,8 @@ void *hiloPCP(void *sinUso){
 				atenderCPU(g_socketsCpu[i]);
 			}
 		}
+		FD_ZERO(&g_fds_lecturaCpu);
+		FD_SET(socketEscuchaPCP,&g_fds_lecturaCpu);
 	}
 return NULL;
 }
@@ -1261,7 +1271,7 @@ void *hiloTerminarProcesos(void *sinUso){
 				printf("elemento:%i socket:%i\n",i,g_socketsProg[i]);
 			}
 		//sacando el socket del conjunto de lectura
-		FD_CLR(proceso->soquet_prog,&g_fds_maestroProg);
+		//FD_CLR(proceso->soquet_prog,&g_fds_maestroProg);------>deprecado
 		//cerrando la conexion
 		close(proceso->soquet_prog);
 	}
