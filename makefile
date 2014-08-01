@@ -13,10 +13,15 @@ instalar-compartida:
 desinstalar-compartida:
 	cd Biblioteca-compartida && make desinstalar
 
-instalar-kernel:
-	cd Kernel && make instalar
-desinstalar-kernel:
-	cd Kernel && make desinstalar
+instalar-kernelPoll:
+	cd KernelPoll && make instalar
+desinstalar-kernelPoll:
+	cd KernelPoll && make desinstalar
+	
+instalar-kernelSelect:
+	cd KernelSelect && make instalar
+desinstalar-kernelSelect:	
+	cd KernelSelect && make instalar
 
 instalar-umv:
 	cd UMV && make instalar
