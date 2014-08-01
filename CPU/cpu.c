@@ -427,8 +427,8 @@ void expulsarProceso(){
 	exit(EXIT_SUCCESS);
 }
 void llenarDiccionario(){
-	int                   i,offset;
-	char                  nombre;
+	int  i,offset;
+	char nombre;
 
 	log_debug(g_logger,"Se llenara el diccionario de variables con:");
 	//levantar del cacho de segmento de satck traido de umv las variables y sus direcciones

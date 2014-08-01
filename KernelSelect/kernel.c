@@ -478,6 +478,7 @@ void atenderCPU(int p_sockCPU){
 	case K_EXPULSADO_DESCONEXION: //cpu avisa que se va a desconectar
 		log_debug(g_logger,"atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION");
 		//printf("atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION\n");
+		printf("\n==>	mensaje de cpu: K_EXPULSADO_DESCONEXION\n");
 		if(list_any_satisfy(listaCpuLibres,(void*) mismoSoquet)){
 			//la cpu que se desconecta no esta ejecutando ningun proceso
 			liberarMsg(&mensajeCPU);
@@ -699,7 +700,7 @@ void atenderPrograma(int p_sockPrograma){
 		mensajeProg.encabezado.codMsg=P_ENVIAR_SCRIPT;
 		mensajeProg.encabezado.longitud=0;
 		enviarMsg(p_sockPrograma,mensajeProg);
-		printf("enviando P_ENVIAR_SCRIPT\n");
+		//printf("enviando P_ENVIAR_SCRIPT\n");
 		liberarMsg(&mensajeProg);
 		break;
 	case K_ENVIO_SCRIPT:
@@ -1353,7 +1354,7 @@ void listarEjecutando(){
 	//if(list_size(listaEjecutando)!=0)printf("\n");
 }
 void listarListos(){
-		int i;
+	int i;
 	printf("\nESTADO-->LISTOS(%i):",queue_size(colaListos));
 	for(i=0;i<queue_size(colaListos);i++){
 		t_nodo_proceso *prog= list_get(colaListos->elements,i);//queue_peek(colaListos);
@@ -1377,7 +1378,6 @@ void listarBloqueados(){
 	void iterarSemafs2(char *clave,t_hiloIO *hilo){
 		int i;
 		printf("\n                   Dispositivo %s (%i):",clave,queue_size(hilo->dataHilo.bloqueados));
-
 		for(i=0;i<queue_size(hilo->dataHilo.bloqueados);i++){
 			t_bloqueadoIO *bloqueado=list_get(hilo->dataHilo.bloqueados->elements,i);//queue_peek(hilo->dataHilo.bloqueados);
 			printf(" -->idProceso:%i (program counter:%i)",bloqueado->proceso->pcb.id_proceso,bloqueado->proceso->pcb.program_counter);
@@ -1514,10 +1514,6 @@ void liberarVarGlob(char **varGlob){
 	free(varGlob);
 }
 void ponerCpuDisponible(int p_soquet){
-	extern t_list          *listaCpuLibres;
-	extern sem_t            sem_listaCpu;
-	extern pthread_mutex_t  mutex_listaCpu;
-
 	int *soque=malloc(sizeof(int));//NO HACER FREE() LO CARGO EN LA LISTACPULIBRES LUEGO EN EL DESPACHADOR LO LIBERO
 	//printf("poniendo cpu a libre\n");
 	*soque=p_soquet;
