@@ -66,8 +66,6 @@ int main(int argc, char** argv){
 
 	while(1){
 		//ESTRUCTURAS PARA SELECT()
-		printf("en el while\n");
-		sleep(1);
 		FD_ZERO(&descriptoresLectura);
 		FD_SET(socketEscucha,&descriptoresLectura);
 		FD_SET(STDIN,&descriptoresLectura);//----->consola

@@ -157,15 +157,13 @@ int main(int argc,char** argv){
 	g_socketsProg[0]=socketEscuchaPLP;
 	g_socketsAbiertosProg=1;
 
-	printf("main()==>hiloPLP=>socketEscuchaPLP socketEscucha:%i g_socketsAbiertos:%i\n",socketEscuchaPLP,g_socketsAbiertosProg);
+	//printf("main()==>hiloPLP=>socketEscuchaPLP socketEscucha:%i g_socketsAbiertos:%i\n",socketEscuchaPLP,g_socketsAbiertosProg);
 	//MAIN HILO PLP
 	while(1){
-		printf("en while PLP con socketMayor:%i...\n",socketMayor);
-		sleep(1);
-
+		//printf("en while PLP con socketMayor:%i...\n",socketMayor);
 		for (i=1;i<g_socketsAbiertosProg;i++){
 			FD_SET(g_socketsProg[i],&g_fds_lecturaProg);
-			printf("puso en el conjunto g_fds_lecturaProg al socket %i\n",g_socketsProg[i]);
+			//printf("puso en el conjunto g_fds_lecturaProg al socket %i\n",g_socketsProg[i]);
 		}
 
 		if(select(socketMayor+1,&g_fds_lecturaProg,NULL,NULL,NULL)==-1){
@@ -173,7 +171,7 @@ int main(int argc,char** argv){
 			return EXIT_FAILURE;
 		}
 		if(FD_ISSET(g_socketsProg[0],&g_fds_lecturaProg)){
-			printf("nueva conexion de un programa\n");
+			printf("Nueva conexion de un programa\n");
 			//un nuevo programa quiere conexion
 			g_socketsAbiertosProg++;
 			atenderNuevaConexion(socketEscuchaPLP,(void*)atenderPrograma,&socketMayor,g_socketsAbiertosProg,g_socketsProg);
@@ -181,7 +179,7 @@ int main(int argc,char** argv){
 		//chequando pedidos de programas ya conectados
 		for(i=1;i<g_socketsAbiertosProg;i++){
 			if(FD_ISSET(g_socketsProg[i],&g_fds_lecturaProg)){
-				printf("actividad en el g_socketsProg[ %i ]\n",i);
+				//printf("actividad en el g_socketsProg[ %i ]\n",i);
 				atenderPrograma(g_socketsProg[i]);
 			}
 		}
@@ -216,7 +214,7 @@ void atenderCPU(int p_sockCPU){
 	switch(mensajeCPU.encabezado.codMsg){
 	case K_HANDSHAKE:
 		log_debug(g_logger,"atenderCPU()===>mensaje de cpu: K_HANDSHAKE");
-		printf("atenderCPU()===>mensaje de cpu: K_HANDSHAKE\n");
+		//printf("atenderCPU()===>mensaje de cpu: K_HANDSHAKE\n");
 		//se presento una cpu nueva
 		mensajeCPU.encabezado.codMsg=CONEXION_OK;
 		mensajeCPU.encabezado.longitud=0;
@@ -227,7 +225,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_FIN_PROG:
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG");
-		printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG\n");
+		//printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG\n");
 		//un proceso termino=>a la lista listaTerminados
 		actualizarPcb(&l_pcb,mensajeCPU);//------------>hace falta?----->VER SINO OTRA FORMA DE SACAR EL id
 		liberarMsg(&mensajeCPU);
@@ -245,7 +243,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_ES://un proceso en cpu pidio e/s. Serializacion: pcb+dispositivo+tiempo
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu:K_EXPULSADO_ES");
-		printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_ES\n");
+		//printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_ES\n");
 		actualizarPcb(&l_pcb,mensajeCPU);
 
 		//sacar el proceso de listaEjecutando
@@ -294,7 +292,7 @@ void atenderCPU(int p_sockCPU){
 	case K_WAIT://serializado: id_proceso+nombre_de_semaforo
 		semaforo=NULL;
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_WAIT");
-		printf("atenderCPU()==>mensaje de cpu: K_WAIT\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_WAIT\n");
 
 		nombreSem=realloc(nombreSem,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombreSem,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -332,7 +330,7 @@ void atenderCPU(int p_sockCPU){
 			free(nombreSem);nombreSem=NULL;
 			break;
 		}
-		printf("se encontro el semaforo en la lista nombre:%s valor:%i\n",semaforo->nombre,semaforo->valor);
+		//printf("se encontro el semaforo en la lista nombre:%s valor:%i\n",semaforo->nombre,semaforo->valor);
 		r=semaforo->valor;
 		if(r>0){
 			//mandar mensaje a cpu que no se bloqueara el proceso en ese semaforo
@@ -376,7 +374,7 @@ void atenderCPU(int p_sockCPU){
 	case K_SIGNAL://serializado: id_proceso+nombre de_semaforo
 		semaforo=NULL;
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_SIGNAL");
-		printf("atenderCPU()==>mensaje de cpu: K_SIGNAL\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_SIGNAL\n");
 
 		nombreSem=realloc(nombreSem,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombreSem,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -411,14 +409,14 @@ void atenderCPU(int p_sockCPU){
 			free(nombreSem);nombreSem=NULL;
 			break;
 		}
-		printf("se encontro el semaforo en la lista nombre:%s valor:%i\n",semaforo->nombre,semaforo->valor);
+		//printf("se encontro el semaforo en la lista nombre:%s valor:%i\n",semaforo->nombre,semaforo->valor);
 
 		mensajeCPU.encabezado.codMsg=C_SIGNAL_OK;
 		mensajeCPU.encabezado.longitud=0;
 		enviarMsg(p_sockCPU,mensajeCPU);
 		liberarMsg(&mensajeCPU);
 		k=semaforo->valor;//sino en el if hace cagada(????)
-		printf("semaforo:%s valor:%i\n",semaforo->nombre,k);
+		//printf("semaforo:%s valor:%i\n",semaforo->nombre,k);
 		if(k<0){//=>el semaforo era negativo =>desencolar algun proceso que estuviera bloqueado
 			pthread_mutex_lock(&mutex_semaforos);
 			semaforo->valor++;
@@ -434,7 +432,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_SEG_FAULT://un proceso en cpu salio por operacion invalida en memoria
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_EXPULSADO_SEG_FAULT");
-		printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_SEG_FAULT\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_SEG_FAULT\n");
 		actualizarPcb(&l_pcb,mensajeCPU);//--------->VER OTRA FORMA DE SACAR EL id
 		id=l_pcb.id_proceso;
 		liberarMsg(&mensajeCPU);
@@ -453,7 +451,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_FIN_QUANTUM://un proceso en cpu salio por fin de quantum
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM");
-		printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM\n");
 
 		actualizarPcb(&l_pcb,mensajeCPU);
 		liberarMsg(&mensajeCPU);
@@ -479,7 +477,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_DESCONEXION: //cpu avisa que se va a desconectar
 		log_debug(g_logger,"atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION");
-		printf("atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION\n");
+		//printf("atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION\n");
 		if(list_any_satisfy(listaCpuLibres,(void*) mismoSoquet)){
 			//la cpu que se desconecta no esta ejecutando ningun proceso
 			liberarMsg(&mensajeCPU);
@@ -507,10 +505,10 @@ void atenderCPU(int p_sockCPU){
 		}
 		//CERRAR EL SOCKET DE ESA CONEXION
 		//reordenando el vector de sockets de los cpus
-		printf("vector de sockets de cpu antes de la desconexion:\n");
+		/*printf("vector de sockets de cpu antes de la desconexion:\n");
 		for(i=1;i<g_socketsCpuAbiertos;i++){
 			printf("elemento:%i socket:%i\n",i,g_socketsCpu[i]);
-		}
+		}*/
 		for(i=1;i<g_socketsCpuAbiertos;i++){
 			if(g_socketsCpu[i]==p_sockCPU){break;}
 		}
@@ -518,18 +516,16 @@ void atenderCPU(int p_sockCPU){
 			g_socketsCpu[i]=g_socketsCpu[i+1];
 		}
 		g_socketsCpuAbiertos--;
-		printf("vector de sockets de cpu despues de la desconexion:\n");
+		/*printf("vector de sockets de cpu despues de la desconexion:\n");
 			for(i=1;i<g_socketsCpuAbiertos;i++){
 				printf("elemento:%i socket:%i\n",i,g_socketsCpu[i]);
-			}
-		//sacando el socket del conjunto de lectura
-		//FD_CLR(p_sockCPU,&g_fds_maestroCpu);----------->deprecado
+			}*/
 		//cerrando la conexion
 		close(p_sockCPU);
 	break;
 	case K_IMPRIMIR_VAR:
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_IMPRIMIR_VAR");
-		printf("K_IMPRIMIR_VAR****\n");
+		//printf("K_IMPRIMIR_VAR****\n");
 		//mandarle un mensaje a programa con el valor a ser impreso
 
 		uint32_t dato;
@@ -547,7 +543,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_IMPRIMIR_TXT://serializado idProceso(uint16_t)+texto
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_IMPRIMIR_TXT");
-		printf("atenderCPU()==>mensaje de cpu: K_IMPRIMIR_TXT\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_IMPRIMIR_TXT\n");
 		//mandarle un mensaje a programa con el texto a ser impreso
 		memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
 		mensajeCPU.encabezado.longitud=mensajeCPU.encabezado.longitud-sizeof(uint16_t);
@@ -561,7 +557,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_PEDIDO_VAR_GL://serializacion:id_proceso+nombre_var_compartida
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL");
-		printf("atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL\n");
 
 		nombCompar=realloc(nombCompar,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombCompar,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -603,7 +599,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_ASIGNAR_VAR_GL://serializado: id_proceso+nombre+valor
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL");
-		printf("atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL\n");
+		//printf("atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL\n");
 		k=mensajeCPU.encabezado.longitud-sizeof(uint16_t)-sizeof(uint32_t);
 		nombCompar=realloc(nombCompar,k+1);
 		memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
@@ -637,7 +633,7 @@ void atenderCPU(int p_sockCPU){
 		mensajeCPU.encabezado.codMsg=VALOR_COMPARTIDA_OK;
 		mensajeCPU.encabezado.longitud=0;
 		enviarMsg(p_sockCPU,mensajeCPU);
-		printf("se envio el mensaje de valorcompartida ok por el socket: %i\n",p_sockCPU);
+		//printf("se envio el mensaje de valorcompartida ok por el socket: %i\n",p_sockCPU);
 		liberarMsg(&mensajeCPU);
 
 		varBuscada->valor=valorCompar;
@@ -670,7 +666,7 @@ void levantarArchivoConf(char *path){
 	config_destroy(configKernel);
 
 	log_debug(g_logger,"levantarArchivoConf()==>Se levanto el archivo de configuracion...")	;
-	printf("***se levanto el archivo de configuracion*****\n");
+	printf("******se levanto el archivo de configuracion********\n");
 }
 void atenderNuevaConexion(int sockEscucha,void (*funcionQueAtiende)(int),int* mayorSock,int socketsAbiertos,int* g_sockets){
 	int socketNuevo;
@@ -679,7 +675,7 @@ void atenderNuevaConexion(int sockEscucha,void (*funcionQueAtiende)(int),int* ma
 	//FD_SET(socketNuevo,p_fds_maestro);------>deprecado
 	g_sockets[socketsAbiertos-1]=socketNuevo;
 	if(socketNuevo>*mayorSock) *mayorSock=socketNuevo;
-	printf("en atenderNuevaConexion con socketEscucha:%i socketNuevo:%i socketMayor(ahora):%i\n",sockEscucha,socketNuevo,*mayorSock);
+	//printf("en atenderNuevaConexion con socketEscucha:%i socketNuevo:%i socketMayor(ahora):%i\n",sockEscucha,socketNuevo,*mayorSock);
 	funcionQueAtiende(socketNuevo);//derivo a 1 funcion que sigue atendiendo a la conexion -tanto para cpus como para programas- por viene como parametro
 }
 void atenderPrograma(int p_sockPrograma){
@@ -697,7 +693,7 @@ void atenderPrograma(int p_sockPrograma){
 	switch(mensajeProg.encabezado.codMsg){
 	case K_HANDSHAKE:
 		log_debug(g_logger,"atenderPrograma()==>mensaje de programa:K_HANDSHAKE");
-		printf("atenderPrograma()==>mensaje de programa:K_HANDSHAKE\n");
+		//printf("atenderPrograma()==>mensaje de programa:K_HANDSHAKE\n");
 		//programa manda el handshake=>pedir el codigo del script
 		liberarMsg(&mensajeProg);
 		mensajeProg.encabezado.codMsg=P_ENVIAR_SCRIPT;
@@ -708,7 +704,7 @@ void atenderPrograma(int p_sockPrograma){
 		break;
 	case K_ENVIO_SCRIPT:
 		log_debug(g_logger,"atenderPrograma()==>mensaje de programa:K_ENVIO_SCRIPT");
-		printf("atenderPrograma()==>mensaje de programa:K_ENVIO_SCRIPT\n");
+		//printf("atenderPrograma()==>mensaje de programa:K_ENVIO_SCRIPT\n");
 		//programa manda el codigo del script
 		codigo=malloc(mensajeProg.encabezado.longitud);
 		memcpy(codigo,mensajeProg.flujoDatos,mensajeProg.encabezado.longitud);
@@ -743,10 +739,10 @@ void atenderPrograma(int p_sockPrograma){
 				g_socketsProg[i]=g_socketsProg[i+1];
 			}
 			g_socketsAbiertosProg--;
-			printf("vector de sockets de cpu despues de la desconexion:\n");
+			/*printf("vector de sockets de cpu despues de la desconexion:\n");
 				for(i=1;i<g_socketsAbiertosProg;i++){
 					printf("elemento:%i socket:%i\n",i,g_socketsProg[i]);
-				}
+				}*/
 			//sacando el socket del conjunto de lectura
 			//FD_CLR(p_sockPrograma,&g_fds_maestroProg);--------->deprecado
 			//cerrando la conexion
@@ -1087,9 +1083,9 @@ static void destruirNodoSemaforo(t_semaforo *semaforo){
 }
 
 void *hiloPCP(void *sinUso){
-	printf("***********hiloPCP lanzado*********\n");
 	int i,socketEscuchaPCP,socketMayor;
 
+	printf("******************hiloPCP lanzado*******************\n");
 	log_debug(g_logger,"hiloPCP()==>Hilo hiloPCP lanzado...");
 
 	//MULTIPLEXANDO CONEXIONES ENTRANTES DE CPU
@@ -1106,20 +1102,17 @@ void *hiloPCP(void *sinUso){
 
 	//MAIN HILO PCP
 	while(1){
-		printf("en while pcp con socketMayor: %i...\n",socketMayor);
-		sleep(1);
-
-		//g_fds_lecturaCpu=g_fds_maestroCpu;------------->no resulta
+		//printf("en while pcp con socketMayor: %i...\n",socketMayor);
 		for(i=1;i<g_socketsCpuAbiertos;i++){
 			FD_SET(g_socketsCpu[i],&g_fds_lecturaCpu);
-			printf("puso en el conjunto g_fds_lecturaCpu al socket %i\n",g_socketsCpu[i]);
+			//printf("puso en el conjunto g_fds_lecturaCpu al socket %i\n",g_socketsCpu[i]);
 		}
 		if(select(socketMayor+1,&g_fds_lecturaCpu,NULL,NULL,NULL)==-1){
 			printf("ERROR:error en select()\n");
 		}
 		if(FD_ISSET(g_socketsCpu[0],&g_fds_lecturaCpu)){
 			//un nuevo programa quiere conexion
-			printf("actividad en el g_socketsCpu[0]\n");
+			//printf("actividad en el g_socketsCpu[0]\n");
 			g_socketsCpuAbiertos++;
 			atenderNuevaConexion(socketEscuchaPCP,(void*)atenderCPU,&socketMayor,g_socketsCpuAbiertos,g_socketsCpu);
 		}
@@ -1135,7 +1128,7 @@ void *hiloPCP(void *sinUso){
 return NULL;
 }
 void *hiloManejoListas(void* sinUso){
-	printf("***********hiloManejaListas lanzado***\n");
+	printf("**************hiloManejaListas lanzado**************\n");
 	log_debug(g_logger,"hiloManejoListas()==>Se lanzo el hilo hiloManejoListas...");
 
 	while(1){
@@ -1166,7 +1159,7 @@ void *hiloDespachador(void *sinUso){
 	t_msg           mensajeCPU;
 	mensajeCPU.flujoDatos=NULL;
 
-	printf("***********hiloDespachador lanzado*********\n");
+	printf("**************hiloDespachador lanzado***************\n");
 	log_debug(g_logger,"hiloDespachador()==>Se lanzo el hilo hiloDespachador...");
 
 	while(1){
@@ -1178,7 +1171,7 @@ void *hiloDespachador(void *sinUso){
 		pthread_mutex_unlock(&mutex_listaListos);
 
 		log_debug(g_logger,"hiloDespachador()==>Esperando una cpu libre...");
-		printf("esperando por una cpu libre...\n");
+		//printf("esperando por una cpu libre...\n");
 		listarListos();
 
 		sem_wait(&sem_listaCpu);
@@ -1230,7 +1223,7 @@ void *hiloTerminarProcesos(void *sinUso){
 	t_nodo_proceso *        proceso;
 	t_msg                   mensaje;
 
-	printf("***********hiloTerminarProcesos lanzado******\n");
+	printf("************hiloTerminarProcesos lanzado************\n");
 	log_debug(g_logger,"hiloTerminarProcesos()==>Se lanzo el hilo hiloTerminarPorcesos...");
 
 	while(1){
@@ -1241,7 +1234,7 @@ void *hiloTerminarProcesos(void *sinUso){
 		pthread_mutex_unlock(&mutex_listaTerminados);
 		//se saco al proceos de listaTerminados
 		log_debug(g_logger,"hiloTerminarProcesos()==>Termino de ejecutarse y se expulsa el proceso id:%i",proceso->pcb.id_proceso);
-		printf("hiloTerminarProcesos()==>Termino de ejecutarse y se expulsa el proceso id:%i  soquet:%i\n",proceso->pcb.id_proceso,proceso->soquet_prog);
+		//printf("hiloTerminarProcesos()==>Termino de ejecutarse y se expulsa el proceso id:%i  soquet:%i\n",proceso->pcb.id_proceso,proceso->soquet_prog);
 		//PEDIR A UMV LIBERE TODOS LOS SEGMENTOS DEL PROCESO
 		mensaje.encabezado.codMsg=U_DESTRUIR_SEGMENTO;
 		mensaje.encabezado.longitud=sizeof(int16_t);
@@ -1259,10 +1252,10 @@ void *hiloTerminarProcesos(void *sinUso){
 		//CERRAR ESA CONEXION
 		//reordenando el vector de sockets de los programas
 		int i,k;
-		printf("vector de sockets de progs antes de la desconexion:\n");
+		/*printf("vector de sockets de progs antes de la desconexion:\n");
 		for(i=1;i<g_socketsAbiertosProg;i++){
 			printf("elemento:%i socket:%i\n",i,g_socketsProg[i]);
-		}
+		}*/
 		for(i=1;i<g_socketsAbiertosProg;i++){
 			if(g_socketsProg[i]==proceso->soquet_prog)break;
 		}
@@ -1270,10 +1263,10 @@ void *hiloTerminarProcesos(void *sinUso){
 			g_socketsProg[i]=g_socketsProg[i+1];
 		}
 		g_socketsAbiertosProg--;
-		printf("vector de sockets de cpu despues de la desconexion:\n");
+		/*printf("vector de sockets de cpu despues de la desconexion:\n");
 			for(i=1;i<g_socketsAbiertosProg;i++){
 				printf("elemento:%i socket:%i\n",i,g_socketsProg[i]);
-			}
+			}*/
 		//sacando el socket del conjunto de lectura
 		//FD_CLR(proceso->soquet_prog,&g_fds_maestroProg);------>deprecado
 		//cerrando la conexion
@@ -1286,7 +1279,7 @@ void *hiloIO(void *parametros){
 	int            suenio;
 	t_dataHilo    *parametro=(t_dataHilo*)parametros;
 
-	printf("***********hiloIO lanzado***********\n");
+	printf("*******************hiloIO lanzado*******************\n");
 	log_debug(g_logger,"hiloIO()==> hiloIO lanzado...");
 
 	while(1){
@@ -1314,16 +1307,16 @@ void *hiloSemaforos(void *sinUso){
 	log_debug(g_logger,"hiloSemaforos()==>hilo hiloSemaforos lanzado...");
 
 	while(1){
-		printf(".......en while de hiloSemaforos esperando en el semaforo......\n");
+		//printf(".......en while de hiloSemaforos esperando en el semaforo......\n");
 		sem_wait(&sem_semaforos);
-		printf("......se desbloqueo el semaforo y lo vamos a buscar al diccionario..................\n");
+		//printf("......se desbloqueo el semaforo y lo vamos a buscar al diccionario..................\n");
 
 		for(i=0;i<list_size(listaSemaforos);i++){
 			t_semaforo *semaforo=list_get(listaSemaforos,i);
 			if(semaforo->desbloquear&&!(queue_is_empty(semaforo->bloqueados))){
 
 				log_debug(g_logger,"hiloSemaforos()==>Se desbloqueara un proceso bloqueado en el semaforo %s",semaforo->nombre);
-				printf("se encontro el desbloquear true y cola de bloqueados no vacia\n");
+				//printf("se encontro el desbloquear true y cola de bloqueados no vacia\n");
 
 				pthread_mutex_lock(&mutex_semaforos);
 				t_nodo_proceso *proceso=queue_pop(semaforo->bloqueados);
@@ -1343,65 +1336,65 @@ void *hiloSemaforos(void *sinUso){
 
 void listarNuevos(){
 	int     i;
-	printf("LISTANUEVOS tamanio: %i\n",list_size(listaNuevos));
+	printf("\nESTADO-->NUEVOS(%i):",list_size(listaNuevos));
 	for(i=0;i<list_size(listaNuevos);i++){
 		t_nodo_proceso *prog= list_get(listaNuevos,i);
-		printf(" -->idProceso:%i (program counter:%i",prog->pcb.id_proceso,prog->pcb.program_counter);
+		printf(" -->idProceso:%i (program counter:%i)",prog->pcb.id_proceso,prog->pcb.program_counter);
 	}
-	if(list_size(listaNuevos)!=0)printf("\n");
+	//if(list_size(listaNuevos)!=0)printf("\n");
 }
 void listarEjecutando(){
 	int i;
-	printf("LISTAEJECUTANDO -tamanio: %i\n",list_size(listaEjecutando));
+	printf("\nESTADO-->EJECUTANDO(%i):",list_size(listaEjecutando));
 	for(i=0;i<list_size(listaEjecutando);i++){
 		t_nodo_proceso *prog= list_get(listaEjecutando,i);
 		printf(" -->idProceso:%i (program counter:%i)",prog->pcb.id_proceso,prog->pcb.program_counter);
 	}
-	if(list_size(listaEjecutando)!=0)printf("\n");
+	//if(list_size(listaEjecutando)!=0)printf("\n");
 }
 void listarListos(){
 		int i;
-	printf("LISTALISTOS-tamanio: %i\n",queue_size(colaListos));
+	printf("\nESTADO-->LISTOS(%i):",queue_size(colaListos));
 	for(i=0;i<queue_size(colaListos);i++){
 		t_nodo_proceso *prog= list_get(colaListos->elements,i);//queue_peek(colaListos);
 		printf(" -->idProceso:%i (program counter:%i)",prog->pcb.id_proceso,prog->pcb.program_counter);
 	}
-	if(queue_size(colaListos)!=0)printf("\n");
+	//if(queue_size(colaListos)!=0)printf("\n");
 }
 void listarTerminados(){
 	int i;
-	printf("LISTATERMINADOS-tamanio %i\n",list_size(listaTerminados));
+	printf("\nESTADO-->TERMINADOS(%i):",list_size(listaTerminados));
 	for(i=0;i<list_size(listaTerminados);i++){
 		t_nodo_proceso *prog=(t_nodo_proceso*) list_get(listaTerminados,i);
 		printf(" -->idProceso:%i (program counter:%i)",prog->pcb.id_proceso,prog->pcb.program_counter);
 	}
-	if(list_size(listaTerminados)!=0)printf("\n");
+	//if(list_size(listaTerminados)!=0)printf("\n");
 }
 void listarBloqueados(){
 	int i,j;
 
-	printf("BLOQUEADOS\n");
+	printf("\nESTADO-->BLOQUEADOS:");
 	void iterarSemafs2(char *clave,t_hiloIO *hilo){
 		int i;
-		printf("Dispositivo:%s -tamanio: %i\n",clave,queue_size(hilo->dataHilo.bloqueados));
+		printf("\n                   Dispositivo %s (%i):",clave,queue_size(hilo->dataHilo.bloqueados));
 
 		for(i=0;i<queue_size(hilo->dataHilo.bloqueados);i++){
 			t_bloqueadoIO *bloqueado=list_get(hilo->dataHilo.bloqueados->elements,i);//queue_peek(hilo->dataHilo.bloqueados);
 			printf(" -->idProceso:%i (program counter:%i)",bloqueado->proceso->pcb.id_proceso,bloqueado->proceso->pcb.program_counter);
 		}
-		if(queue_size(hilo->dataHilo.bloqueados)!=0)printf("\n");
+		//if(queue_size(hilo->dataHilo.bloqueados)!=0)printf("\n");
 	}
 	dictionary_iterator(diccio_hilos,(void*)iterarSemafs2);
 
 	//LISTANDO LOS BLOQUEADOS EN LOS SEMAFOROS
 	for(i=0;i<list_size(listaSemaforos);i++){
 		t_semaforo *semaforo=list_get(listaSemaforos,i);
-		printf("Semaforo: %s -tamanio %i-\n",semaforo->nombre,queue_size(semaforo->bloqueados));
+		printf("\n                   Semaforo %s(%i):",semaforo->nombre,queue_size(semaforo->bloqueados));
 		for(j=0;j<queue_size(semaforo->bloqueados);j++){
 			t_nodo_proceso *prog=list_get(semaforo->bloqueados->elements,j);
 			printf(" -->idProceso:%i (program counter:%i)",prog->pcb.id_proceso,prog->pcb.program_counter);
 		}
-		if(queue_size(semaforo->bloqueados)!=0)printf("\n");
+		//if(queue_size(semaforo->bloqueados)!=0)printf("\n");
 	}
 }
 void listarCpu(){
@@ -1446,7 +1439,6 @@ void crearHilosIO(){
 	for(i=0;i<cantIO;i++){//inicializando y lanzando cada uno de los hilos que administra cada dispositivo
 
 		t_hiloIO *hilo=malloc(sizeof(t_hiloIO));
-		printf("sizeof t_hiloIO:%i\n",sizeof(t_hiloIO));
 		hilo->dataHilo.retardo=atoi(valorHIO[i]);
 		hilo->dataHilo.bloqueados=queue_create();
 		sem_init(&hilo->dataHilo.sem_io,0,0);
@@ -1460,7 +1452,7 @@ void crearHilosIO(){
 void crearListaSemaforos(){
 	int i=0,cantSemaforos=0;
 
-	printf("*****FUNCION: crearDiccioSemaforos******\n");
+	printf("************FUNCION: crearListaSemaforos************\n");
 	while(1){//calculando cuantos semaforos hay
 		if(semaforos[i]=='\0')break;
 		cantSemaforos++;
@@ -1485,7 +1477,7 @@ t_semaforo *crearSemaforo(char*nombre,uint32_t valor){
 }
 void crearDiccioCompartidas(){
 	int i=0;
-	printf("******** FUNCION CREARdICCIOcOMPARTIDAS*********\n");
+	printf("***********FUNCION CREARdICCIOcOMPARTIDAS***********\n");
 	while(varCompartidas[i]!='\0'){
 		//printf("tomando la var compartida:%s\n",varCompartidas[i]);
 		t_varCompartida * nuevaVar=crearVarCompartida((char*)varCompartidas[i],0);
