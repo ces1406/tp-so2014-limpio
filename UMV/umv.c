@@ -45,8 +45,6 @@ void crearEstructuras();
 void leerMP(t_byte* data,t_byte* direccion,int tamanio);
 
 int main(int argc, char** argv){
-	/*extern t_log  *loguer;
-	extern fd_set  descriptoresLectura;*/
 	int socketActivo,socketEscucha;
 
 	//INICIALIZANDO EL LOG
@@ -68,6 +66,8 @@ int main(int argc, char** argv){
 
 	while(1){
 		//ESTRUCTURAS PARA SELECT()
+		printf("en el while\n");
+		sleep(1);
 		FD_ZERO(&descriptoresLectura);
 		FD_SET(socketEscucha,&descriptoresLectura);
 		FD_SET(STDIN,&descriptoresLectura);//----->consola
@@ -97,10 +97,6 @@ void levantarArchivoConf(char* path){
 	 * PUERTO=5000
 	 * RETARDO=2000
 	 */
-	/*extern int     puertoUMV;
-	extern int     retardo;
-	extern int     tamanioBloque;
-	extern char    ipUMV[16];*/
 	char          *ip;
 	t_config      *configUMV;
 	extern t_log  *loguer;
@@ -116,8 +112,6 @@ void levantarArchivoConf(char* path){
 	log_debug(loguer,"levantarArchivoConf()==>Se levanto el archivo con ip:%s puerto:%i tamanio de bloque:%i retardo:%i...",ipUMV,puertoUMV,tamanioBloque,retardo);
 }
 void *hiloAtencionKernel(void *sinUso){
-	/*extern int     socketKernel;
-	extern t_log  *loguer;*/
 	uint16_t       idProceso;
 	t_byte        *data=NULL;
 	t_size         tamanio,offset;
@@ -167,7 +161,7 @@ void *hiloAtencionKernel(void *sinUso){
 		case U_PROCESO_ACTIVO:
 			//EL CPU INFORMA EL INGRESO DE UN PROCESO
 			memcpy(&idProceso,mensajeKernel.flujoDatos,sizeof(uint16_t));
-			log_debug(loguer,"hiloAtencionKernel()==>Llego un mensaje con U_PROCESO_ACTIVO id del proceso:%i...",*((int*)mensajeKernel.flujoDatos));
+			log_debug(loguer,"hiloAtencionKernel()==>Llego un mensaje con U_PROCESO_ACTIVO id del proceso:%i...",idProceso);
 			limpiarMsg(&mensajeKernel);
 			break;
 		case U_ALMACENAR_BYTES:
@@ -204,9 +198,6 @@ void *hiloAtencionKernel(void *sinUso){
 	return NULL;
 }
 void *hiloAtencionCPU(void *socketParametro){
-	/*extern t_list *listaSegmentos;
-	extern fd_set  descriptoresLectura;
-	extern t_log  *loguer;*/
 	int            procesoActivo,base,offset,socketCPU,tamanio;
 	t_byte        *dirAbsoluta;
 	t_byte        *data=NULL;
@@ -282,6 +273,8 @@ void *hiloAtencionCPU(void *socketParametro){
 			mensajeCPU.encabezado.longitud=0;
 			enviarMsg(socketCPU,mensajeCPU);
 			limpiarMsg(&mensajeCPU);
+			free(data);
+			data=NULL;
 			break;
 		case U_PROCESO_ACTIVO:
 			//EL CPU INFORMA EL INGRESO DE UN PROCESO
@@ -302,9 +295,6 @@ void *hiloAtencionCPU(void *socketParametro){
 	return NULL;
 }
 void atenderConsola(){
-	/*extern int     retardo;
-	extern int     algoritmo;
-	extern t_list *listaSegmentos;*/
 	t_segmento    *segmento;
     char           comando[TAM_BUFF_COMANDO];
 	char          *primera;
@@ -394,12 +384,6 @@ void atenderConsola(){
 	pantallaComandos();
 }
 t_puntero crearSegmento(uint16_t p_idPrograma,t_size p_tamanio){
-	/*extern t_byte          *mp;
-	extern t_list          *listaSegmentos;
-	extern t_log           *loguer;
-	extern pthread_mutex_t  mutex_listaSeg;
-	extern int              algoritmo;
-	extern int              tamanioBloque;*/
 	int                     adelante=-1,posDeSegVecino=0;
 	u_int32_t               dirFisicaInicio,dirFisicaFin,i;
 	t_segmento             *segmentoNuevo;
@@ -508,8 +492,6 @@ t_puntero crearSegmento(uint16_t p_idPrograma,t_size p_tamanio){
 	return (t_puntero)(segmentoNuevo->dirLogica);
 }
 void destruirSegmentos(uint16_t p_idPrograma){
-	/*extern pthread_mutex_t  mutex_listaSeg;
-	extern t_list          *listaSegmentos;*/
 	short int               i,z;
 
 	//solo sacar ese nodo de la lista de segmentos
@@ -522,10 +504,6 @@ void destruirSegmentos(uint16_t p_idPrograma){
 	pthread_mutex_unlock(&mutex_listaSeg);
 }
 void compactar(){
-	/*extern t_log           *loguer;
-	extern t_list          *listaSegmentos;
-	extern pthread_mutex_t  mutex_mp;
-	extern pthread_mutex_t  mutex_listaSeg;*/
 	int                     dirInicio=(int)(mp);
 	int                     i,j,dirAux;
 	t_byte                 *valor1,*valor2;
@@ -558,8 +536,6 @@ void compactar(){
 int evaluarCompactacion(t_size tamanioSeg){
 	int            acumulado=0,i;
 	t_segmento    *segmento=malloc(sizeof(t_segmento));
-	/*extern t_list *listaSegmentos;
-	extern t_log  *loguer;*/
 
 	for(i=0;i<list_size(listaSegmentos);i++){
 		segmento=list_get(listaSegmentos,i);
@@ -574,8 +550,6 @@ int evaluarCompactacion(t_size tamanioSeg){
 	}
 }
 void llenarSegmento(t_segmento* segmento,u_int32_t tamanio,u_int32_t idProg,u_int32_t idSegmento,u_int32_t dirInicio){
-	//extern int ultimaDirLogica;
-
 	segmento->dirLogica=ultimaDirLogica;
 	segmento->idProceso=idProg;
 	segmento->idSegmento=idSegmento;
@@ -585,7 +559,6 @@ void llenarSegmento(t_segmento* segmento,u_int32_t tamanio,u_int32_t idProg,u_in
 	log_debug(loguer,"llenarSegmento()==>se llena un nodoSegmento con dirLogica:%i idProceso:%i idSegmento:%i dirInicio:%i tamanio:%i",ultimaDirLogica,idProg,idSegmento,dirInicio,tamanio);
 }
 void listar(FILE *archDump){
-	//extern t_list *listaSegmentos;
 	int i;
 	t_segmento *segmento=malloc(sizeof(t_segmento));
 
@@ -597,9 +570,6 @@ void listar(FILE *archDump){
 	printf("\n");
 }
 void atenderConexion(int listener){
-	/*extern int    socketKernel;
-	extern int    socketHilo;
-	extern t_log *loguer;*/
 	int           soquet;
 	pthread_t     idHiloKernel;
 	pthread_t     threadHilo;
@@ -620,9 +590,6 @@ void atenderConexion(int listener){
 	}
 }
 void mapearMemoria(FILE *archDump){
-	/*extern pthread_mutex_t mutex_mp;
-	extern t_byte*         mp;
-	extern int             tamanioBloque;*/
 	int                    w=0;
 
 	pthread_mutex_lock(&mutex_mp);
@@ -641,8 +608,6 @@ void mapearMemoria(FILE *archDump){
 
 }
 void mapearArgu(t_byte * cadena){
-	/*extern int    tamanioBloque;
-	extern t_log *loguer;*/
 	int            w;
 
 	for(w=0;w<strlen((char*)cadena)+1;w++){
@@ -656,8 +621,6 @@ void mapearArgu(t_byte * cadena){
 
 }
 void grabarMP(t_byte* data,int direccion,int tamanio){
-	/*extern t_log          *loguer;
-	extern pthread_mutex_t mutex_mp;*/
 	int i;
 
 	log_debug(loguer,"grabarMP()==>Se grabara en la direccion:%i el dato:%s..",direccion,data);
@@ -699,7 +662,6 @@ void pantallaComandos(){
 			"8-REPORTE DE ESTADO:    dump\n");
 }
 void listarScreen(){
-	//extern t_list *listaSegmentos;
 	int i;
 	t_segmento *segmento=malloc(sizeof(t_segmento));
 
@@ -714,12 +676,10 @@ void limpiarMsg(t_msg *mensaje){
 	mensaje->flujoDatos=NULL;
 }
 void mapearMemoria2(){
-	/*extern t_byte* mp;
-	extern int     tamanioBloque;*/
-	int            w=0,i=1;
+	int w=0,i=1;
 
 	printf("DIRECCION FISICA DE INICIO: %i\n",(int)mp);
-	printf("offset(bytes)           contenido(aparecen chars/otros = :)\n");
+	printf("offset(bytes)           contenido(formato char/si no es char :)\n");
 	printf("  %06i      ",w);
 	for(w=0;w<tamanioBloque;w++){
 		if(w-i*64==0){
@@ -735,13 +695,6 @@ void mapearMemoria2(){
 	printf("\n");
 }
 void crearEstructuras(){
-	/*extern int              tamanioBloque;
-	extern int              ultimaDirLogica;
-	extern t_list          *listaSegmentos;
-	extern pthread_mutex_t  mutex_listaSeg;
-	extern pthread_mutex_t  mutex_mp;
-	extern t_byte          *mp;*/
-
 	listaSegmentos=list_create();
 	mp=malloc(tamanioBloque);
 	ultimaDirLogica=0;

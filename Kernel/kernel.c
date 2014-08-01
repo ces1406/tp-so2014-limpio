@@ -806,7 +806,8 @@ void atenderPrograma(int p_sockPrograma){
 			//free(mensajeProg.flujoDatos);
 			short int peso=calcularPeso(metadata->cantidad_de_etiquetas,metadata->cantidad_de_funciones,metadata->instrucciones_size);
 			log_debug(g_logger,"atenderCPU()==>proceso id:%i peso:%i",pcb.id_proceso,peso);
-			free(metadata);
+			//free(metadata);
+			metadata_destruir(metadata);
 			encolarEnNuevos(pcb,peso,p_sockPrograma);
 		}
 		free(codigo);

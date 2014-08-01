@@ -151,7 +151,6 @@ int main(int argc,char** argv){
 	escucharSocket(socketEscuchaPLP);
 
 	//SELECT
-	//FD_SET(socketEscuchaPLP,&g_fds_maestroProg);
 	FD_ZERO(&g_fds_lecturaProg);
 	FD_SET(socketEscuchaPLP,&g_fds_lecturaProg);
 	socketMayor=socketEscuchaPLP;
@@ -210,13 +209,14 @@ void atenderCPU(int p_sockCPU){
 	log_debug(g_logger,"atenderCPU()==>Se atiende a un mensaje de CPU...");
 	bool buscaPorId(t_nodo_proceso *prog){return (prog->pcb.id_proceso==id);}
 	bool mismoSoquet(void *sock1){
-	   	int s1;
+		int s1;
 		memcpy(&s1,(int*)sock1,sizeof(int));
 		return s1==p_sockCPU;
 	}
 	switch(mensajeCPU.encabezado.codMsg){
 	case K_HANDSHAKE:
 		log_debug(g_logger,"atenderCPU()===>mensaje de cpu: K_HANDSHAKE");
+		printf("atenderCPU()===>mensaje de cpu: K_HANDSHAKE\n");
 		//se presento una cpu nueva
 		mensajeCPU.encabezado.codMsg=CONEXION_OK;
 		mensajeCPU.encabezado.longitud=0;
@@ -227,6 +227,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_FIN_PROG:
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG");
+		printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_FIN_PROG\n");
 		//un proceso termino=>a la lista listaTerminados
 		actualizarPcb(&l_pcb,mensajeCPU);//------------>hace falta?----->VER SINO OTRA FORMA DE SACAR EL id
 		liberarMsg(&mensajeCPU);
@@ -244,6 +245,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_ES://un proceso en cpu pidio e/s. Serializacion: pcb+dispositivo+tiempo
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu:K_EXPULSADO_ES");
+		printf("atenderCPU()==>mensaje de cpu:K_EXPULSADO_ES\n");
 		actualizarPcb(&l_pcb,mensajeCPU);
 
 		//sacar el proceso de listaEjecutando
@@ -432,6 +434,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_SEG_FAULT://un proceso en cpu salio por operacion invalida en memoria
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_EXPULSADO_SEG_FAULT");
+		printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_SEG_FAULT\n");
 		actualizarPcb(&l_pcb,mensajeCPU);//--------->VER OTRA FORMA DE SACAR EL id
 		id=l_pcb.id_proceso;
 		liberarMsg(&mensajeCPU);
@@ -450,7 +453,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_FIN_QUANTUM://un proceso en cpu salio por fin de quantum
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM");
-		//printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM");
+		printf("atenderCPU()==>mensaje de cpu: K_EXPULSADO_FIN_QUANTUM\n");
 
 		actualizarPcb(&l_pcb,mensajeCPU);
 		liberarMsg(&mensajeCPU);
@@ -476,7 +479,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_EXPULSADO_DESCONEXION: //cpu avisa que se va a desconectar
 		log_debug(g_logger,"atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION");
-
+		printf("atenderCPU()==>	mensaje de cpu: K_EXPULSADO_DESCONEXION\n");
 		if(list_any_satisfy(listaCpuLibres,(void*) mismoSoquet)){
 			//la cpu que se desconecta no esta ejecutando ningun proceso
 			liberarMsg(&mensajeCPU);
@@ -526,7 +529,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_IMPRIMIR_VAR:
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_IMPRIMIR_VAR");
-		//printf("K_IMPRIMIR_VAR****\n");
+		printf("K_IMPRIMIR_VAR****\n");
 		//mandarle un mensaje a programa con el valor a ser impreso
 
 		uint32_t dato;
@@ -544,7 +547,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_IMPRIMIR_TXT://serializado idProceso(uint16_t)+texto
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_IMPRIMIR_TXT");
-
+		printf("atenderCPU()==>mensaje de cpu: K_IMPRIMIR_TXT\n");
 		//mandarle un mensaje a programa con el texto a ser impreso
 		memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
 		mensajeCPU.encabezado.longitud=mensajeCPU.encabezado.longitud-sizeof(uint16_t);
@@ -558,7 +561,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_PEDIDO_VAR_GL://serializacion:id_proceso+nombre_var_compartida
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL");
-		//printf("atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL");
+		printf("atenderCPU()==>mensaje de cpu: K_PEDIDO_VAR_GL\n");
 
 		nombCompar=realloc(nombCompar,mensajeCPU.encabezado.longitud-sizeof(uint16_t)+1);
 		memcpy(nombCompar,mensajeCPU.flujoDatos+sizeof(uint16_t),mensajeCPU.encabezado.longitud-sizeof(uint16_t));
@@ -600,7 +603,7 @@ void atenderCPU(int p_sockCPU){
 	break;
 	case K_ASIGNAR_VAR_GL://serializado: id_proceso+nombre+valor
 		log_debug(g_logger,"atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL");
-		//printf("atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL\n");
+		printf("atenderCPU()==>mensaje de cpu: K_ASIGNAR_VAR_GL\n");
 		k=mensajeCPU.encabezado.longitud-sizeof(uint16_t)-sizeof(uint32_t);
 		nombCompar=realloc(nombCompar,k+1);
 		memcpy(&id,mensajeCPU.flujoDatos,sizeof(uint16_t));
@@ -762,7 +765,8 @@ void atenderPrograma(int p_sockPrograma){
 			//free(mensajeProg.flujoDatos);
 			short int peso=calcularPeso(metadata->cantidad_de_etiquetas,metadata->cantidad_de_funciones,metadata->instrucciones_size);
 			log_debug(g_logger,"atenderCPU()==>proceso id:%i peso:%i",pcb.id_proceso,peso);
-			free(metadata);
+			//free(metadata);
+			metadata_destruir(metadata);
 			encolarEnNuevos(pcb,peso,p_sockPrograma);
 		}
 		free(codigo);
