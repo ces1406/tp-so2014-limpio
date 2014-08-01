@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Kernel</name>
+	<name>KernelPoll</name>
 	<comment></comment>
 	<projects>
 		<project>Biblioteca-commons</project>

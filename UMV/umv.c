@@ -325,13 +325,13 @@ void atenderConsola(){
 		retardo=atoi(strtok(NULL," "));
 		printf("nuevo retardo:%i\n",retardo);
 	}else if(string_equals_ignore_case(primera,"dump")){
-		//archDump=fopen(NOM_ARCH_DUMP,"a");
-		//fprintf(archDump,"=====>SEGMENTOS POR PROCESOS:\n");
-		//listar(archDump);------------>REPONER DEPRECADO TEMPORALMENTE PARA NO ABRIR UN ARCHIVO
-		//fprintf(archDump,"=====>MAPA DE MEMORIA:\n");
-		//mapearMemoria(archDump);
-		//fclose(archDump);
-		//mapearMemoria2();
+		archDump=fopen(NOM_ARCH_DUMP,"a");
+		fprintf(archDump,"=====>SEGMENTOS POR PROCESOS:\n");
+		listar(archDump);
+		fprintf(archDump,"=====>MAPA DE MEMORIA:\n");
+		mapearMemoria(archDump);
+		fclose(archDump);
+		mapearMemoria2();
 		listarScreen();
 	}else if(string_equals_ignore_case(primera,"escribir")){
 		pid=strtok(NULL," ");
